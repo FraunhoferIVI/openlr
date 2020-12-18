@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="RemoteRepositoriesConfiguration">
+    <remote-repository>
+      <option name="id" value="locationtech-releases" />
+      <option name="name" value="locationtech-releases" />
+      <option name="url" value="https://repo.locationtech.org/content/groups/releases" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="central" />
+      <option name="name" value="Central Repository" />
+      <option name="url" value="https://nexus.ivi.fraunhofer.de/repository/oe251/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="central" />
+      <option name="name" value="Central Repository" />
+      <option name="url" value="https://repo.maven.apache.org/maven2" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="jts-snapshots" />
+      <option name="name" value="jts-snapshots" />
+      <option name="url" value="https://repo.locationtech.org/content/repositories/jts-snapshots" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="nexus.ivi.fraunhofer.de-OE251" />
+      <option name="name" value="Fraunhofer-OE251" />
+      <option name="url" value="https://nexus.ivi.fraunhofer.de/repository/oe251/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="central" />
+      <option name="name" value="Maven Central repository" />
+      <option name="url" value="https://repo1.maven.org/maven2" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="jboss.community" />
+      <option name="name" value="JBoss Community repository" />
+      <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="osgeo-snapshot" />
+      <option name="name" value="OSGeo Snapshot Repository" />
+      <option name="url" value="https://repo.osgeo.org/repository/snapshot/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="osgeo" />
+      <option name="name" value="OSGeo Release Repository" />
+      <option name="url" value="https://repo.osgeo.org/repository/release/" />
+    </remote-repository>
+  </component>
+</project>

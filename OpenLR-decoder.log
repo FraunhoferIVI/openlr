@@ -1,0 +1,5 @@
+2020-05-19 16:28:43,401 ERROR [AbstractDecoder] no candidate lines found for lrp 0
+2020-05-19 16:29:12,244 ERROR [AbstractDecoder] no candidate lines found for lrp 0
+2020-05-19 16:29:28,516 DEBUG [OpenLRPropertiesReader] load OpenLR_h2o properties file
+2020-05-19 16:29:29,135 ERROR [AbstractDecoder] no candidate lines found for lrp 0
+2020-05-19 16:29:29,139 DEBUG [OpenLRPropertiesReader] load OpenLR_h2o properties file

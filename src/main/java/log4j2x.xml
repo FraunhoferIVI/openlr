@@ -1,0 +1,22 @@
+<!-- Log all to file but only important stuff to stdout -->
+<configuration>
+
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<!-- deny all events with a level below INFO, i.e. TRACE and DEBUG -->
+		<!-- <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>WARNING</level>
+		</filter>
+		 -->
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5p %logger{35} \(%file:%line\) - %m%n</pattern>
+		</encoder>
+	</appender>
+
+	<timestamp key="bySecond" datePattern="yyyyMMdd'T'HHmmss" />
+
+	
+	<root>
+        <level value="ALL"/>
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>
