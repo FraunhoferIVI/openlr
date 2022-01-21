@@ -21,9 +21,9 @@ Project status: reference implementation
 #### Incidents visualized in QGIS
 ![IncidentsVisualized](src/main/resources/Screenshots/visualizedIncidents.png)
 
-### setup
+### Setup
 ***
-see [SETUP](SETUP.md) for instructions how to get the Project up and running
+See [SETUP](SETUP.md) for instructions how to get the Project up and running
 
 ### Databse tables 
 ***
