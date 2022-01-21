@@ -6,13 +6,11 @@ If you want to view the master's thesis, you can ask the IVI for access.
 
 ## Table of Contents
 1. [General Info](#general-info)
-2. [Programms and accounts needed](#programms)
-3. [Database setup](#database_setup)
-4. [Build](#build)
-5. [Database tables](#tables)
-6. [FAQs](#faqs)
-7. [Technologies](#technologies)
-8. [License](#license)
+2. [setup](#setup)
+3. [Database tables](#tables)
+4. [FAQs](#faqs)
+5. [Technologies](#technologies)
+6. [License](#license)
 
 ### General Info
 ***
@@ -20,64 +18,20 @@ Reference implementation implemented in Java. Uses the [TomTom OpenLR standard](
 
 Project status: reference implementation
 
-### Incidents visualized in QGIS
+#### Incidents visualized in QGIS
 ![IncidentsVisualized](src/main/resources/Screenshots/visualizedIncidents.png)
 
-
-### Programms and accounts needed
+### setup
 ***
-* At least a [HERE Developer Freemium plan](https://developer.here.com/pricing) with an API KEY for the usage of the [HERE Traffic API](https://developer.here.com/documentation/traffic/dev_guide/topics/what-is.html).
-
-#### Programms
-* IDE of your choice, e.g. IntelliJ IDEA
-* [PostgreSQL database](https://www.postgresql.org) with [PostGIS](http://postgis.net) extension
-* Database client, e.g. DBeaver, pgAdmin 
-
-If you'd like to visualize the affected lines: 
-* [QGIS](https://www.qgis.org/de/site/) to visualize the data, however, is not absolutely necessary
-
-If you want to set up a PostgreSQL database with OSM data: 
-* [OSM2pgsql](https://osm2pgsql.org)
-
-### Database setup 
-***
-Check out HOWTO for instructions on setting up a routable PostgreSQL database based on OSM data.
-
-### Build
-***
-1. Clone project from GitHub
-    * [Instruction for IntelliJ](https://blog.jetbrains.com/idea/2020/10/clone-a-project-from-github/) 
-2. Change database informtion ***dbname***, ***user*** and ***password*** in:  
-    * [DatasourceConfig.java](src/main/java/DataBase/DatasourceConfig.java) 
-    * pom.xml
-```xml
-<!-- JDBC connection parameters -->
-<jdbc>
-    <driver>org.postgresql.Driver</driver>
-    <url>jdbc:postgresql://localhost/dbname</url>
-    <user>username</user>
-    <password>password</password>
-</jdbc>
-```
-
-3. Set your [HERE Api key](src/main/java/HereApi/ApiRequest.java)
-```java
-private String hereApikey = "yourApiKey";
-```
-
-4. To build the project
-```bash
-mvn clean install
-```
-5. Run the program. The requested bounding must be specified as WGS84 coordinates.
+see [SETUP](SETUP.md) for instructions how to get the Project up and running
 
 ### Databse tables 
 ***
 The database sould contain the following tables before running the programm: 
 + **form_of_way** : physical characteristics of a street. For more informationn check [TomTom OpenLR White Paper](https://www.openlr-association.com/fileadmin/user_upload/openlr-whitepaper_v1.5.pdf).
 + **functional_road_class**: indicates the importance of the road in the network. For more informationn check [TomTom OpenLR White Paper](https://www.openlr-association.com/fileadmin/user_upload/openlr-whitepaper_v1.5.pdf).
-+ + **kanten**: lines in the road network. 
-+ + **knoten**: nodes in the road network. 
++ **kanten**: lines in the road network. 
++ **knoten**: nodes in the road network. 
 + **metadata**: metainformation for the map, map owner, map name and bounding box information.
 
 
