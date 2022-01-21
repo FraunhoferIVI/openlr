@@ -12,7 +12,7 @@ Examples are for Windows(x64).
 6. [osm2pgsql](#osm2pgsql)
 7. [OSM data](#<OSMdata>)
 8. [DB setup](#DB-setup)
-9. [Maven](#9.\ [Maven](https://maven.apache.org/download.cgi))
+9. [Maven](#Maven)
 10. [Build](#Build)
 
 
@@ -42,7 +42,6 @@ This setup is written for [DBeaver](https://dbeaver.io/download/), but again you
     * click *Environment Variables* in the bottom right, than *Path* in the top  List and *Edit*
     * click *new* in the top right and paste the Path you copied earlyer
 
-# <OSMdata>
 ### 7. [OSM data](https://download.geofabrik.de/)
 * Download a file from the Table (it is highly recomended to just get a City-file for starters)
 
@@ -88,7 +87,7 @@ When run your DB should look as follows:
     * *Variable name:* MAVEN_HOME *value:* **PathTo**\apache-maven-x.x.x
     * %MAVEN_HOME%\bin to the Path variable
 
-### Build
+### 10. Build
 * Clone this project
     * Fork it **(optional)**
     * click *Code* (green button) and copy the HTTP-Adress
