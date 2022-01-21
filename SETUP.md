@@ -42,7 +42,8 @@ This setup is written for [DBeaver](https://dbeaver.io/download/), but again you
     * click *Environment Variables* in the bottom right, than *Path* in the top  List and *Edit*
     * click *new* in the top right and paste the Path you copied earlyer
 
-### 7. [OSM data](https://download.geofabrik.de/) <OSMdata>
+# <OSMdata>
+### 7. [OSM data](https://download.geofabrik.de/)
 * Download a file from the Table (it is highly recomended to just get a City-file for starters)
 
 ### 8. DB setup
