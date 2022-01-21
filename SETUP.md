@@ -87,7 +87,7 @@ When run your DB should look as follows:
     * *Variable name:* MAVEN_HOME *value:* **PathTo**\apache-maven-x.x.x
     * %MAVEN_HOME%\bin to the Path variable
 
-### 10. Build
+### Build
 * Clone this project
     * Fork it **(optional)**
     * click *Code* (green button) and copy the HTTP-Adress
