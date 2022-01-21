@@ -6,7 +6,7 @@ If you want to view the master's thesis, you can ask the IVI for access.
 
 ## Table of Contents
 1. [General Info](#general-info)
-2. [setup](#setup)
+2. [Setup](#setup)
 3. [Database tables](#tables)
 4. [FAQs](#faqs)
 5. [Technologies](#technologies)
