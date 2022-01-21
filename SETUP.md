@@ -10,7 +10,7 @@ Examples are for Windows(x64).
 4. [DB client](#DB-client)
 5. [HERE-Api-Key](#HERE-Api-Key)
 6. [osm2pgsql](#osm2pgsql)
-7. [OSM data](#OSMdata)
+7. [OSM data](#<OSMdata>)
 8. [DB setup](#DB-setup)
 9. [Maven](#9.)
 10. [Build](#Build)
