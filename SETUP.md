@@ -10,7 +10,7 @@ Examples are for Windows(x64).
 4. [DB client](#DB-client)
 5. [HERE-Api-Key](#HERE-Api-Key)
 6. [osm2pgsql](#osm2pgsql)
-7. [OSM data](#OSM-data)
+7. [OSM data](#OSMdata)
 8. [DB setup](#DB-setup)
 9. [Maven](#9.)
 10. [Build](#Build)
@@ -42,7 +42,7 @@ This setup is written for [DBeaver](https://dbeaver.io/download/), but again you
     * click *Environment Variables* in the bottom right, than *Path* in the top  List and *Edit*
     * click *new* in the top right and paste the Path you copied earlyer
 
-### 7. [OSM data](https://download.geofabrik.de/)
+### 7. [OSM data](https://download.geofabrik.de/) <OSMdata>
 * Download a file from the Table (it is highly recomended to just get a City-file for starters)
 
 ### 8. DB setup
