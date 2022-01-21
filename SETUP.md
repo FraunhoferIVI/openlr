@@ -12,7 +12,7 @@ Examples are for Windows(x64).
 6. [osm2pgsql](#osm2pgsql)
 7. [OSM data](#OSM-data)
 8. [DB setup](#DB-setup)
-9. [Maven](#Maven)
+9. [Maven](#9.)
 10. [Build](#Build)
 
 
