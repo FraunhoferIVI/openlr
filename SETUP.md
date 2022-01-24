@@ -7,11 +7,11 @@ Examples are for Windows(x64).
 1. [IDE](#IDE)
 2. [QGIS](#QGIS)
 3. [PostgreSQL](#PostgreSQL)
-4. [DB client](#DB-client)
+4. [Database client](#DB-client)
 5. [HERE-Api-Key](#HERE-Api-Key)
 6. [osm2pgsql](#osm2pgsql)
 7. [OSM data](#<OSMdata>)
-8. [DB setup](#DB-setup)
+8. [Database setup](#DB-setup)
 9. [Maven](#Maven)
 10. [Build](#Build)
 
@@ -19,20 +19,24 @@ Examples are for Windows(x64).
 ### IDE
 This code works best with [IntelliJ](https://www.jetbrains.com/de-de/idea/download/#section=windows), but feel free to use your favourite IDE
 
-### [QGIS](https://www.qgis.org/en/site/forusers/download.html) <- right click and open in new window
-* Use the first Link under *Download for Windows*
+### QGIS
+* QGIS is free and open source geographic information system, which is used to visualise test data
+* Download [QGIS](https://www.qgis.org/en/site/forusers/download.html) and install
+* Choose the matching download for your system, e.g. if you are on a Windows machine, use the first Link under *Download for Windows*
 
-### [PostgreSQL](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads)
-* Click the first Link in the Windows column
-* In the Application Stack Builder, choose your PostgreSQL > install the latest PostGIS Bundle (under *Spatial Extensions*)
+### PostgreSQL
+* Download and Install PostgreSQL with PostGIS and pgrouting extension: [PostgreSQL](http://download.osgeo.org/postgis/windows/pg14/)
+  * Alternatively: Download and install [PostgreSQL](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads)
+  * Click the first Link in the Windows column
+  * In the Application Stack Builder during installation of PostgreSQL, choose your PostgreSQL > install the latest PostGIS Bundle (under *Spatial Extensions*)
 
-### DB client
-This setup is written for [DBeaver](https://dbeaver.io/download/), but again you can choose which you want.
+### Database client
+Download and install [DBeaver](https://dbeaver.io/download/)
 * Take the 64 bit installer under *Windows*
 
 ### [HERE-Api-Key](https://developer.here.com/pricing)
 * Sign up for Freemium Plan
-* create a REST API Key
+* Create a REST API Key
 
 ### [osm2pgsql](https://osm2pgsql.org/doc/install.html#installing-on-windows)
 * Download the prebuild binaries (*osm2pgsql-latest-x64.zip*)
@@ -40,14 +44,16 @@ This setup is written for [DBeaver](https://dbeaver.io/download/), but again you
 * Add the bin to your Path
     * type "View advanced system Settings" in the Start Menu and open it
     * click *Environment Variables* in the bottom right, than *Path* in the top  List and *Edit*
-    * click *new* in the top right and paste the Path you copied earlyer
+    * click *new* in the top right and paste the Path you copied earlier
 
 ### [OSM data](https://download.geofabrik.de/)
-* Download a file from the Table (it is highly recomended to just get a City-file for starters)
+* Download an osm *.pbf file of your choice
+* It is highly recommended to just get a city-file for beginners, e.g. [hamburg-latest](https://download.geofabrik.de/europe/germany/hamburg-latest.osm.pbf)
 
-### DB setup
-* Create DB
-    * in DBeaver click *New Connection* (top left) and choose *PostgreSQL*, than *Next*
+### Database setup
+* Create the data base
+    * Start DBeaver 
+    * click *New Connection* (top left) and choose *PostgreSQL*, than *Next*
     * insert your PostgreSQL-Password and click *Done*
 * Add extensions
     * under *postgres\DB's* doubleclick *postgres*
@@ -77,7 +83,7 @@ INSERT INTO openlr.metadata(map_name, map_owner) VALUES
 ('Hamburg', 'OSM');
 ```
 
-When run your DB should look as follows:
+After running your database should look as follows:
 
 ![OpenLRShema](src/main/resources/Screenshots/tables.png)
 

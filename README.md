@@ -23,7 +23,7 @@ Project status: reference implementation
 
 ### Setup
 ***
-See [SETUP](SETUP.md) for instructions how to get the Project up and running
+See [SETUP](SETUP.md) for more detailed instructions how to get the project components up and running
 
 ### Databse tables 
 ***
