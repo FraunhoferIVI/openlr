@@ -34,7 +34,7 @@ import static org.jooq.sources.tables.Kanten.KANTEN;
 public class ApiRequest {
 
     //your API key
-    private String hereApikey = "yourApi";
+    private String hereApikey = "OOnP0DKtdmJcVaRywCD3T-QR5QUVbwGRTaJRLgItXjs";
     private String answer;
 
     // Contains incident information for all requested bounding boxes
@@ -72,29 +72,29 @@ public class ApiRequest {
 
     /**
      * Sets URL with given bbox.
+     * @param resource "incidents"/"flow"
      * @throws MalformedURLException URL is in the wrong format or an unknown transmission protocol is specified.
      */
-    private URL setUrl(String bbox) throws MalformedURLException {
+    private URL setUrl(String bbox, String resource) throws MalformedURLException {
         String baseUrl = "https://traffic.ls.hereapi.com";
-        String incidents = "/traffic/6.3/";
-        String flow = "/traffic/6.2/";
-        String resource = "incidents";
+        String version = "/traffic/6.3/";
         String format = ".xml";
         String apiKey = "?apiKey=" + hereApikey;
         //String criticality = "&criticality=minor";
-        return new URL(baseUrl + incidents + resource + format + apiKey + bbox);
+        return new URL(baseUrl + version + resource + format + apiKey + bbox);
     }
 
     /**
      * Sends request to HERE API.
      * API returns xml, xml is converted to String.
      * @param bboxString Coordinates for bbox given as String to use in Api Request URL.
+     * @param resource "incidents"/"flow"
      * @return HERE Api answer as String
      * @throws IOException Signals a general input / output error
      */
-    private String sendRequest(String bboxString) throws IOException {
+    private String sendRequest(String bboxString, String resource) throws IOException {
 
-        URL request = setUrl(bboxString);
+        URL request = setUrl(bboxString, resource);
         System.out.println(request);
         HttpURLConnection con = (HttpURLConnection) request.openConnection();
         con.setRequestMethod("GET");
@@ -181,36 +181,44 @@ public class ApiRequest {
     }
 
     /**
-     * Checks the bounding box. For the Api Request, the request boundin box is limited to a
+     * Checks the bounding box. For the Api Request, the request bounding box is limited to a
      * maximum of 2 degrees (https://developer.here.com/documentation/traffic/dev_guide/topics/limitations.html).
      * If the specified bounding box is too large, it is broken down into sufficiently small boxes.
      * For each bounding box an API request is made, the XML file is parsed, the OpenLR code is decoded
      * and the incident information and the affected lines are collected.
      *
      * @param bbox Bounding box
+     * @param resource "incidents"/"flow"
      */
-    private void getRecursiveBbox(@NotNull BoundingBox bbox) {
+    private void getRecursiveBbox(@NotNull BoundingBox bbox, String resource) {
 
         // Recursive bounding box query
         if ((bbox.width > 10) || (bbox.height > 10)) {
 
+            double upperLeftLat = bbox.getUpperLeftLat();
+            double upperLeftLon = bbox.getUpperLeftLon();
+            double bottomRightLat = bbox.getBottomRightLat();
+            double bottomRightLon = bbox.getBottomRightLon();
+            double halfHeight = bbox.getHeight() / 2;
+            double halfWidth = bbox.getWidth() / 2;
+
             // Box upper left
-            getRecursiveBbox(new BoundingBox(bbox.getUpperLeftLat(), bbox.getUpperLeftLon(),
-                    (bbox.getUpperLeftLat() - (bbox.getHeight() / 2)), (bbox.getUpperLeftLon() + (bbox.getWidth() / 2))));
+            getRecursiveBbox(new BoundingBox(upperLeftLat, upperLeftLon,
+                    (upperLeftLat - (halfHeight)), (upperLeftLon + (halfWidth))), resource);
             // Box upper right
-            getRecursiveBbox(new BoundingBox(bbox.getUpperLeftLat(), (bbox.getUpperLeftLon() + (bbox.getWidth() / 2)),
-                    (bbox.getUpperLeftLat() - (bbox.getHeight() / 2)), bbox.getBottomRightLon()));
+            getRecursiveBbox(new BoundingBox(upperLeftLat, (upperLeftLon + (halfWidth)),
+                    (upperLeftLat - (halfHeight)), bottomRightLon), resource);
             // Box lower left
-            getRecursiveBbox(new BoundingBox((bbox.getUpperLeftLat() - (bbox.getHeight() / 2)),
-                    bbox.getUpperLeftLon(), bbox.getBottomRightLat(), (bbox.getUpperLeftLon() - (bbox.getWidth() / 2))));
+            getRecursiveBbox(new BoundingBox((upperLeftLat - (halfHeight)),
+                    upperLeftLon, bottomRightLat, (upperLeftLon - (halfWidth))), resource);
             // Box lower right
-            getRecursiveBbox(new BoundingBox((bbox.getUpperLeftLat() - (bbox.getHeight() / 2)),
-                    (bbox.getUpperLeftLon() + (bbox.getWidth() / 2)), bbox.getUpperLeftLat(), bbox.getBottomRightLon()));
+            getRecursiveBbox(new BoundingBox((upperLeftLat - (halfHeight)),
+                    (upperLeftLon + (halfWidth)), upperLeftLat, bottomRightLon), resource);
         } else {
 
-            //Gets Here Api request answer
+            // Gets Here Api request answer
             try {
-                sendRequest(bbox.getBboxRequestString());
+                sendRequest(bbox.getBboxRequestString(), resource);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -218,8 +226,8 @@ public class ApiRequest {
             // Parse answer or file
             XMLParser parser = new XMLParser();
             parser.parseXMLFromApi(answer);
-            // If you wanne test out a file instead of the API
-            //parser.parseXMlFromFile("");
+            // If you want to test out a file instead of the API
+            // parser.parseXMlFromFile("");
 
 
             // Collect relevant data per incident and decoding location
@@ -253,7 +261,7 @@ public class ApiRequest {
         Timestamp currentTimestamp = getTimeStamp();
 
         // Get recursive bounding boxes if bbox is bigger than 2 degrees
-        getRecursiveBbox(setBoundingBox());
+        getRecursiveBbox(setBoundingBox(), "incidents");
 
         // Needed to set schema for creating tables
         Name temp_incidents = DSL.name("openlr", "temp_incidents");
