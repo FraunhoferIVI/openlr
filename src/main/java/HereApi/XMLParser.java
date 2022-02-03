@@ -1,9 +1,6 @@
 package HereApi;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -23,27 +20,35 @@ import java.util.List;
 public class XMLParser {
 
     // List contains the traffic elements in the XML file
-    private List<TrafficItem> listTrafficItems;
+    private List<TrafficItem> listIncidentTrafficItems;
+    private List<FlowItem> listFlowItems;
 
     public XMLParser() {
-        this.listTrafficItems = new ArrayList<>();
+        this.listIncidentTrafficItems = new ArrayList<>();
+        this.listFlowItems = new ArrayList<>();
     }
 
-    public List<TrafficItem> getListTrafficItems() {
-        return listTrafficItems;
+    public List<TrafficItem> getListIncidentTrafficItems() { return listIncidentTrafficItems; }
+
+    public List<FlowItem> getListFlowItems() {
+        return listFlowItems;
     }
 
     /**
      * Method to parse XML form given file path.
      * @param path Filepath of the XML file as String
+     * @param resource "incidents"/"flow"
      */
-    public void parseXMlFromFile(String path) {
+    public void parseXMlFromFile(String path, String resource) {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         try {
             DocumentBuilder builder = factory.newDocumentBuilder();
             try {
                 Document document = builder.parse(new File(path));
-                parseXML(document);
+                if (resource.equals("incidents"))
+                    parseIncidentXML(document);
+                else
+                    parseFlowXML(document);
 
             } catch (SAXException | IOException e) {
                 e.printStackTrace();
@@ -56,29 +61,30 @@ public class XMLParser {
     /**
      * Method to parse answer from HereApi request.
      * @param requestAnswer Request answer as String
+     * @param resource "incidents"/"flow"
      */
-    public void parseXMLFromApi(String requestAnswer) {
+    public void parseXMLFromApi(String requestAnswer, String resource) {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         try {
             DocumentBuilder builder = factory.newDocumentBuilder();
             try {
                 Document document = builder.parse(new InputSource(new StringReader(requestAnswer)));
-                parseXML(document);
-            } catch (SAXException | IOException e) {
-                e.printStackTrace();
-            }
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        }
+
+                if (resource.equals("incidents"))
+                    parseIncidentXML(document);
+                else
+                    parseFlowXML(document);
+
+            } catch (SAXException | IOException e) { e.printStackTrace(); }
+        } catch (ParserConfigurationException e) { e.printStackTrace(); }
     }
 
     /**
-     * Method to parse given XML Document.
+     * Method to parse the given XML Document.
      * Runs through each traffic item node and checks for OpenLR code, if available relevant information are
      * extracted. Creates a traffic item object and adds it to the list of traffic items.
-     * @param document XML Document
      */
-    private void parseXML(Document document) {
+    private void parseIncidentXML(Document document) {
         // Normalize xml document
         document.getDocumentElement().normalize();
 
@@ -100,10 +106,10 @@ public class XMLParser {
             String tILongDesc = null;
             String tICriticality = null;
 
-            Node trfItemNode = trfItemList.item(node);
+            Node trfItem = trfItemList.item(node);
 
             // Get children from specific traffic item (given by trfItemList.item(node)
-            NodeList trfItemChildNodesList = trfItemNode.getChildNodes();
+            NodeList trfItemChildNodesList = trfItem.getChildNodes();
 
             //Find child node "LOCATION" to check for OpenLR Code
             for (int i = 0; i < trfItemChildNodesList.getLength(); i++) {
@@ -132,9 +138,9 @@ public class XMLParser {
                             // Get OpenLR Code
                             tIOpenLR = locationChildNodesList.item(j).getTextContent().replaceAll("[\n ]", "");
                             // get information from different nodes
-                            if (trfItemNode.getNodeType() == Node.ELEMENT_NODE) {
+                            if (trfItem.getNodeType() == Node.ELEMENT_NODE) {
                                 // Cast Node to Element to get elements by tag name
-                                Element trfItemElement = (Element) trfItemNode;
+                                Element trfItemElement = (Element) trfItem;
                                 //Reading out information from trafficItem Node
                                 tIId = trfItemElement.getElementsByTagName("TRAFFIC_ITEM_ID").item(0).getTextContent();
                                 tIStatus = trfItemElement.getElementsByTagName("TRAFFIC_ITEM_STATUS_SHORT_DESC").item(0).getTextContent();
@@ -166,7 +172,7 @@ public class XMLParser {
 
             if (tIId != null)
                 // Generate traffic item object and add to list of traffic items
-                trafficItemToList(tIId, tIStatus, tIType, tIStart, tIEnd, tICriticality,
+                IncidentTrafficItemToList(tIId, tIStatus, tIType, tIStart, tIEnd, tICriticality,
                         tIOpenLR, tIClosure, tIShortDesc, tILongDesc);
         }
     }
@@ -185,13 +191,81 @@ public class XMLParser {
      * @param shortDesc   Brief description of the traffic item
      * @param longDesc    Detailed description of the traffic item
      */
-    private void trafficItemToList(String id, String status, String type, String start, String end, String criticality,
-                                   String openLR, String closure, String shortDesc, String longDesc) {
+    private void IncidentTrafficItemToList(String id, String status, String type, String start, String end, String criticality,
+                                           String openLR, String closure, String shortDesc, String longDesc) {
         // generate traffic Item
         TrafficItem trafficItem = new TrafficItem(id, status, type, start, end, criticality, openLR, closure, shortDesc, longDesc);
 
         // add TrafficItem to list of traffic items
-        this.listTrafficItems.add(trafficItem);
+        this.listIncidentTrafficItems.add(trafficItem);
     }
 
+    /**
+     * Method to parse the given XML Document for traffic flow information.
+     * Creates a FlowItem object and adds it to the list of traffic items.
+     *
+     * @param document XML Document
+     */
+    private void parseFlowXML(Document document) {
+        // Normalize xml document
+        document.getDocumentElement().normalize();
+
+        NodeList flowItems = document.getElementsByTagName("FIS");
+
+        // Go through flow item Nodes
+        for (int node = 0; node < flowItems.getLength(); node++) {
+
+            String fiName = null;
+            double fiAccuracy = 0;
+            double fiFreeFlowSpeed = 0;
+            double fiJamFactor = 0;
+            double fiSpeedLimited = 0;
+            double fiSpeed = 0;
+
+            Node flowItem = flowItems.item(node);
+
+            NodeList fiChildNodes = flowItem.getChildNodes();
+
+            // Get info from relevant child Nodes
+            for (int i = 0; i < fiChildNodes.getLength(); i++) {
+
+                Node fiChildNode = fiChildNodes.item(i);
+
+                if (fiChildNode.getNodeName().equals("TMC")) {
+
+                    NamedNodeMap TMCAttributes = fiChildNode.getAttributes();
+
+                    fiName = TMCAttributes.getNamedItem("DE").getTextContent();
+
+                }
+                if (fiChildNode.getNodeName().equals("CF")) {
+
+                    NamedNodeMap CFAttributes = fiChildNode.getAttributes();
+
+                    fiAccuracy = Double.parseDouble(CFAttributes.getNamedItem("CN").getTextContent());
+                    fiFreeFlowSpeed = Double.parseDouble(CFAttributes.getNamedItem("FF").getTextContent());
+                    fiJamFactor = Double.parseDouble(CFAttributes.getNamedItem("JF").getTextContent());
+                    fiSpeedLimited = Double.parseDouble(CFAttributes.getNamedItem("SP").getTextContent());
+                    fiSpeed = Double.parseDouble(CFAttributes.getNamedItem("SU").getTextContent());
+
+                }
+            }
+            if (fiName != null) {
+                flowItemToList(fiName, fiAccuracy,
+                        fiFreeFlowSpeed, fiJamFactor, fiSpeedLimited, fiSpeed);
+            }
+        }
+    }
+
+    /**
+     * Generates flow item object and adds it to the list of flow items.
+     */
+    private void flowItemToList(String name, double accuracy, double freeFlowSpeed,
+                                double jamFactor, double speedLimited, double speed)
+    {
+        FlowItem flowItem = new FlowItem(name, accuracy,
+                freeFlowSpeed, jamFactor, speedLimited, speed);
+
+        this.listFlowItems.add(flowItem);
+    }
 }

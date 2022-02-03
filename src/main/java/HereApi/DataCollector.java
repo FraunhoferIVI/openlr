@@ -15,33 +15,31 @@ import java.util.List;
 
 public class DataCollector {
 
-    // Contains incident information
-    private List<Incident> listIncidents;
-    // Contains affected lines
-    private List<AffectedLine> listAffectedLines;
+    private List<Incident> incidents;
+    private List<AffectedLine> affectedLines;
+    private List<Flow> flows;
 
     public DataCollector() {
-
-        /* List to contain all incidents */
-        this.listIncidents = new ArrayList<>();
-        /* List to contains all from incidents affected lines */
-        this.listAffectedLines = new ArrayList<>();
+        incidents = new ArrayList<>();
+        affectedLines = new ArrayList<>();
+        flows = new ArrayList<>();
     }
 
-    public List<Incident> getListIncidents() {
+    public List<Incident> getIncidents() { return incidents; }
 
-        return listIncidents;
+    public List<AffectedLine> getAffectedLines() {
+        return affectedLines;
     }
 
-    public List<AffectedLine> getListAffectedLines() {
-        return listAffectedLines;
-    }
+    public List<Flow> getFlows() { return flows; }
 
     /**
      * Converts String to Timestamp
      *
      * @param dateString Date as String, Format: MM/dd/yyyy hh:mm:ss
+     *
      * @return Timestamp
+     *
      * @throws ParseException Signals that an error has been reached unexpectedly while parsing.
      */
     private Timestamp convertString2Timestamp(String dateString) throws ParseException {
@@ -56,9 +54,10 @@ public class DataCollector {
      * Uses OpenLR decoder (TomTom, https://github.com/tomtom-international/openlr ) to determine affected lines.
      *
      * @param trafficItemList List containing extracted traffic items
+     *
      * @throws Exception Exception
      */
-    public void collectInformation(@NotNull List<TrafficItem> trafficItemList) throws Exception {
+    public void collectIncidentInformation(@NotNull List<TrafficItem> trafficItemList) throws Exception {
 
         // Initialize Decoder for HERE OpenLR Codes.
         HereDecoder decoderHere = new HereDecoder();
@@ -108,6 +107,28 @@ public class DataCollector {
     }
 
     /**
+     * Collects flow information for all flow items read from the XML.
+     *
+     * @param flowItemList List containing extracted flow items
+     *
+     * @throws Exception Exception
+     */
+    public void collectFlowInformation(@NotNull List<FlowItem> flowItemList) throws Exception {
+
+        for (FlowItem flowItem : flowItemList) {
+
+            String name = flowItem.getName();
+            double accuracy = flowItem.getAccuracy();
+            double freeFlowSpeed = flowItem.getFreeFlowSpeed();
+            double jamFactor = flowItem.getJamFactor();
+            double speed = flowItem.getSpeed();
+            double speedLimited = flowItem.getSpeedLimited();
+
+            flow2list(name, accuracy, freeFlowSpeed, jamFactor, speed, speedLimited);
+        }
+    }
+
+    /**
      * Extracts affected lines from decoded location. Adds incident id, line and positive / negative offset to List.
      *
      * @param location   Location decoded by the OpenLR code
@@ -135,7 +156,7 @@ public class DataCollector {
                 if (i != 0 && (i != listLines.size() - 1)) {
                     affectedLine = new AffectedLine(listLines.get(i).getID(), incidentId);
                 }
-                this.listAffectedLines.add(affectedLine);
+                this.affectedLines.add(affectedLine);
             }
         }
     }
@@ -160,11 +181,19 @@ public class DataCollector {
      */
     private void incident2list(String incidentId, String type, String status, Timestamp start, Timestamp end,
                                String criticality, String openLRCode, String shortDesc, String longDesc,
-
                                boolean roadClosure, int posOff, int negOff) {
+
         Incident incident = new Incident(incidentId, type, status, start, end, criticality, openLRCode, shortDesc,
                 longDesc, roadClosure, posOff, negOff);
 
-        this.listIncidents.add(incident);
+        incidents.add(incident);
+    }
+
+    private void flow2list(String name, double accuracy, double freeFlowSpeed,
+                           double jamFactor, double speed, double speedLimited) {
+
+        Flow flow = new Flow(name, accuracy, freeFlowSpeed, jamFactor, speedLimited, speed);
+
+        flows.add(flow);
     }
 }
