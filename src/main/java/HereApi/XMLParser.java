@@ -1,5 +1,6 @@
 package HereApi;
 
+import org.jooq.meta.derby.sys.Sys;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -16,7 +17,7 @@ import java.util.List;
 /**
  *
  */
-
+// TODO separate Parser für Flow und Incident
 public class XMLParser {
 
     // List contains the traffic elements in the XML file
@@ -210,60 +211,75 @@ public class XMLParser {
         // Normalize xml document
         document.getDocumentElement().normalize();
 
-        NodeList flowItems = document.getElementsByTagName("FIS");
+        NodeList roadWays = document.getElementsByTagName("RW");
 
-        // Go through flow item Nodes
-        for (int node = 0; node < flowItems.getLength(); node++) {
+        for (int i = 0; i < roadWays.getLength(); i++) {
+            Node roadWay = roadWays.item(i);
+            NodeList flowItems = roadWay.getFirstChild().getChildNodes();
 
-            String fiName = null;
-            double fiAccuracy = 0;
-            double fiFreeFlowSpeed = 0;
-            double fiJamFactor = 0;
-            double fiSpeedLimited = 0;
-            double fiSpeed = 0;
+            String li = roadWay.getAttributes().getNamedItem("LI").getTextContent();
 
-            Node flowItem = flowItems.item(node);
+            for (int j = 0; j < flowItems.getLength(); j++) {
+                Node flowItem = flowItems.item(j);
 
-            NodeList fiChildNodes = flowItem.getChildNodes();
-
-            // Get info from relevant child Nodes
-            for (int i = 0; i < fiChildNodes.getLength(); i++) {
-
-                Node fiChildNode = fiChildNodes.item(i);
-
-                if (fiChildNode.getNodeName().equals("TMC")) {
-
-                    NamedNodeMap TMCAttributes = fiChildNode.getAttributes();
-
-                    fiName = TMCAttributes.getNamedItem("DE").getTextContent();
-
+                if (!(flowItem.getNodeName().equals("FI"))) {
+                    continue;
                 }
-                if (fiChildNode.getNodeName().equals("CF")) {
+                String id = null;
+                String pc = null;
+                String name = null;
+                double accuracy = 0;
+                double freeFlowSpeed = 0;
+                double jamFactor = 0;
+                double speedLimited = 0;
+                double speed = 0;
 
-                    NamedNodeMap CFAttributes = fiChildNode.getAttributes();
+                NodeList fiChildNodes = flowItem.getChildNodes();
 
-                    fiAccuracy = Double.parseDouble(CFAttributes.getNamedItem("CN").getTextContent());
-                    fiFreeFlowSpeed = Double.parseDouble(CFAttributes.getNamedItem("FF").getTextContent());
-                    fiJamFactor = Double.parseDouble(CFAttributes.getNamedItem("JF").getTextContent());
-                    fiSpeedLimited = Double.parseDouble(CFAttributes.getNamedItem("SP").getTextContent());
-                    fiSpeed = Double.parseDouble(CFAttributes.getNamedItem("SU").getTextContent());
+                // Get info from relevant child Nodes
+                for (int n = 0; n < fiChildNodes.getLength(); n++) {
 
+                    Node fiChildNode = fiChildNodes.item(n);
+
+                    if (fiChildNode.getNodeName().equals("TMC")) {
+
+                        NamedNodeMap TMCAttributes = fiChildNode.getAttributes();
+
+                        pc = TMCAttributes.getNamedItem("PC").getTextContent();
+                        name = TMCAttributes.getNamedItem("DE").getTextContent();
+
+                    }
+                    if (fiChildNode.getNodeName().equals("CF")) {
+
+                        NamedNodeMap CFAttributes = fiChildNode.getAttributes();
+
+                        accuracy = Double.parseDouble(CFAttributes.getNamedItem("CN").getTextContent());
+                        freeFlowSpeed = Double.parseDouble(CFAttributes.getNamedItem("FF").getTextContent());
+                        jamFactor = Double.parseDouble(CFAttributes.getNamedItem("JF").getTextContent());
+                        speedLimited = Double.parseDouble(CFAttributes.getNamedItem("SP").getTextContent());
+                        speed = (speedLimited == -1) ? speedLimited :
+                                Double.parseDouble(CFAttributes.getNamedItem("SU").getTextContent());
+
+
+                    }
                 }
-            }
-            if (fiName != null) {
-                flowItemToList(fiName, fiAccuracy,
-                        fiFreeFlowSpeed, fiJamFactor, fiSpeedLimited, fiSpeed);
+                if (pc != null) {
+                    id = "LI_" + li + "_PC_" + pc;
+                    flowItemToList(id, name, accuracy,
+                            freeFlowSpeed, jamFactor, speedLimited, speed);
+                }
             }
         }
     }
 
+
     /**
      * Generates flow item object and adds it to the list of flow items.
      */
-    private void flowItemToList(String name, double accuracy, double freeFlowSpeed,
+    private void flowItemToList(String id, String name, double accuracy, double freeFlowSpeed,
                                 double jamFactor, double speedLimited, double speed)
     {
-        FlowItem flowItem = new FlowItem(name, accuracy,
+        FlowItem flowItem = new FlowItem(id, name, accuracy,
                 freeFlowSpeed, jamFactor, speedLimited, speed);
 
         this.listFlowItems.add(flowItem);

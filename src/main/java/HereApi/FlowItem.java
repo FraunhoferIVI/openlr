@@ -1,7 +1,11 @@
 package HereApi;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class FlowItem {
 
+    private String id;
     private String name;
     private double accuracy;
     private double freeFlowSpeed;
@@ -9,8 +13,11 @@ public class FlowItem {
     private double speedLimited;
     private double speed;
 
-    public FlowItem(String name, double accuracy, double freeFlowSpeed,
+    private static final Logger logger = LoggerFactory.getLogger(FlowItem.class);
+
+    public FlowItem(String id, String name, double accuracy, double freeFlowSpeed,
                     double jamFactor, double speedLimited, double speed) {
+        this.id = id;
         this.name = name;
         this.accuracy = accuracy;
         this.freeFlowSpeed = freeFlowSpeed;
@@ -18,6 +25,8 @@ public class FlowItem {
         this.speedLimited = speedLimited;
         this.speed = speed;
     }
+
+    public String getId() { return id; }
 
     public String getName() { return name; }
 

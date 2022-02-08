@@ -17,12 +17,12 @@ public class DataCollector {
 
     private List<Incident> incidents;
     private List<AffectedLine> affectedLines;
-    private List<Flow> flows;
+    private List<FlowItem> flowItems;
 
     public DataCollector() {
         incidents = new ArrayList<>();
         affectedLines = new ArrayList<>();
-        flows = new ArrayList<>();
+        flowItems = new ArrayList<>();
     }
 
     public List<Incident> getIncidents() { return incidents; }
@@ -31,7 +31,7 @@ public class DataCollector {
         return affectedLines;
     }
 
-    public List<Flow> getFlows() { return flows; }
+    public List<FlowItem> getFlowItems() { return flowItems; }
 
     /**
      * Converts String to Timestamp
@@ -114,18 +114,7 @@ public class DataCollector {
      * @throws Exception Exception
      */
     public void collectFlowInformation(@NotNull List<FlowItem> flowItemList) throws Exception {
-
-        for (FlowItem flowItem : flowItemList) {
-
-            String name = flowItem.getName();
-            double accuracy = flowItem.getAccuracy();
-            double freeFlowSpeed = flowItem.getFreeFlowSpeed();
-            double jamFactor = flowItem.getJamFactor();
-            double speed = flowItem.getSpeed();
-            double speedLimited = flowItem.getSpeedLimited();
-
-            flow2list(name, accuracy, freeFlowSpeed, jamFactor, speed, speedLimited);
-        }
+        this.flowItems = flowItemList;
     }
 
     /**
@@ -189,11 +178,5 @@ public class DataCollector {
         incidents.add(incident);
     }
 
-    private void flow2list(String name, double accuracy, double freeFlowSpeed,
-                           double jamFactor, double speed, double speedLimited) {
 
-        Flow flow = new Flow(name, accuracy, freeFlowSpeed, jamFactor, speedLimited, speed);
-
-        flows.add(flow);
-    }
 }

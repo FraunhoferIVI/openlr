@@ -8,6 +8,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -41,12 +43,14 @@ public class ApiRequest {
     private List<Incident> incidentList;
     // Contains affected lines for all requested bounding boxes
     private List<AffectedLine> affectedLinesList;
-    private List<Flow> flowList;
+    private List<FlowItem> flowItems;
+
+    private static final Logger logger = LoggerFactory.getLogger(ApiRequest.class);
 
     public ApiRequest() {
         this.incidentList = new ArrayList<>();
         this.affectedLinesList = new ArrayList<>();
-        this.flowList = new ArrayList<>();
+        this.flowItems = new ArrayList<>();
     }
 
     // needed for SQL queries
@@ -102,7 +106,7 @@ public class ApiRequest {
     private String sendRequest(String bboxString, String resource) throws IOException {
 
         URL request = generateURL(bboxString, resource);
-        System.out.println(request);
+        logger.info("request: {}", request);
         HttpURLConnection con = (HttpURLConnection) request.openConnection();
         con.setRequestMethod("GET");
         con.setRequestProperty("Accept", "application/xml");
@@ -169,7 +173,7 @@ public class ApiRequest {
 
         System.out.println("Enter the coordinates for the bounding box as follows (format WGS84):" +
                 "\nUpper Left Lat,Upper Left Lon;Bottom Right Lat,Bottom Right Lon" +
-                "\nExample: 51.057,13.744;51.053,13.751 ");
+                "\nExample: 53.60,9.85;53.50,10.13 (Hamburg)");
         String bboxString = scanner.next();
 
         //BBox to request incidents for Dresden
@@ -191,8 +195,8 @@ public class ApiRequest {
      * Checks the bounding box. For the Api Request, the request bounding box is limited to a
      * maximum of 2 degrees (https://developer.here.com/documentation/traffic/dev_guide/topics/limitations.html).
      * If the specified bounding box is too large, it is broken down into sufficiently small boxes.
-     * For each bounding box an API request is made, the XML file is parsed, the OpenLR code is decoded
-     * and the incident information and the affected lines are collected.
+     * For each bounding box an API request is made, the XML file is parsed, the OpenLR code is decoded (for incidents)
+     * and the relevant information and affected lines are collected.
      *
      * @param bbox Bounding box
      * @param resource "incidents"/"flow"
@@ -249,7 +253,7 @@ public class ApiRequest {
                 this.incidentList.addAll(collector.getIncidents());
                 this.affectedLinesList.addAll(collector.getAffectedLines());
 
-            } else /* flow */ {
+            } else if (resource.equals("flow")) {
                 // Gets Here Api request answer
                 try {
                     sendRequest(bbox.getBboxRequestString(), "flow");
@@ -272,7 +276,7 @@ public class ApiRequest {
                 }
 
                 // Collects incident data and affected lines for all requested bounding boxes
-                flowList.addAll(collector.getFlows());
+                flowItems.addAll(collector.getFlowItems());
             }
         }
     }
@@ -485,6 +489,7 @@ public class ApiRequest {
             } else {
                 // Create temporary flow table
                 DSL.using(configuration1).createTable(temp_flow)
+                        .column("id", SQLDataType.CHAR(50))
                         .column("road_name", SQLDataType.CHAR(50))
                         .column("accuracy", SQLDataType.DOUBLE)
                         .column("free_flow_speed", SQLDataType.DOUBLE)
@@ -493,19 +498,20 @@ public class ApiRequest {
                         .column("speed", SQLDataType.DOUBLE)
                         .column("generationdate", SQLDataType.TIMESTAMP.defaultValue(field("now()", SQLDataType.TIMESTAMP)))
                         .constraints(
-                                primaryKey("road_name"))
+                                primaryKey("id"))
                         .execute();
 
                 // Fill temp flow table
-                for (Flow flowI : this.flowList) {
+                for (FlowItem flowItem : flowItems) {
 
                     DSL.using(configuration1)
                             .insertInto(table(temp_flow),
+                                    field(name("id")),
                                     field(name("road_name")), field(name("accuracy")),
                                     field(name("free_flow_speed")), field(name("jam_factor")),
                                     field(name("speed_limited")), field(name("speed")))
-                            .values(flowI.getName(), flowI.getAccuracy(), flowI.getFreeFlowSpeed(),
-                                    flowI.getJamFactor(), flowI.getSpeedLimited(), flowI.getSpeed())
+                            .values(flowItem.getId(),flowItem.getName(), flowItem.getAccuracy(), flowItem.getFreeFlowSpeed(),
+                                    flowItem.getJamFactor(), flowItem.getSpeedLimited(), flowItem.getSpeed())
                             .execute();
                 }
             }
