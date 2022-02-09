@@ -13,10 +13,11 @@ public class Here2Osm {
 
         ApiRequest request = new ApiRequest();
         try {
-            // request.updateIncidentData();
+            request.updateIncidentData();
             request.updateFlowData();
         } catch (InvalidBboxException | InvalidWGS84CoordinateException e) {
             logger.error("Failed to read incident and flow data due to a invalid bounding box. Message: {}", e.getMessage(), e);
         }
+        logger.info("Program ended.");
     }
 }

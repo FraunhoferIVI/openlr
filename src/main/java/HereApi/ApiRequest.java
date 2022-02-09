@@ -59,7 +59,7 @@ public class ApiRequest {
         try {
             ctx = DSL.using(DatasourceConfig.getConnection(), SQLDialect.POSTGRES);
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("{}", e.getMessage());
         }
     }
 
@@ -88,8 +88,11 @@ public class ApiRequest {
         String version = "/traffic/6.3/";
         String format = ".xml";
         String apiKey = "?apiKey=" + hereApikey;
-        //String criticality = "&criticality=minor";
-        return new URL(baseUrl + version + resource + format + apiKey + bbox);
+        URL url = new URL(baseUrl + version + resource + format + apiKey + bbox);
+
+        logger.info("URL set to: {}", url);
+
+        return url;
     }
 
     /**
@@ -106,7 +109,6 @@ public class ApiRequest {
     private String sendRequest(String bboxString, String resource) throws IOException {
 
         URL request = generateURL(bboxString, resource);
-        logger.info("request: {}", request);
         HttpURLConnection con = (HttpURLConnection) request.openConnection();
         con.setRequestMethod("GET");
         con.setRequestProperty("Accept", "application/xml");
@@ -122,7 +124,7 @@ public class ApiRequest {
             answer = response.toString();
 
         } else {
-            System.out.println("GET Request failed.");
+            logger.error("GET Request failed");
         }
         return answer;
     }
@@ -135,7 +137,12 @@ public class ApiRequest {
     @NotNull
     @Contract(" -> new")
     private Timestamp getTimeStamp() {
-        return new Timestamp(System.currentTimeMillis());
+
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+
+        logger.info("Timestamp: {}", now);
+
+        return now;
     }
 
     /**
@@ -176,8 +183,7 @@ public class ApiRequest {
                 "\nExample: 53.60,9.85;53.50,10.13 (Hamburg)");
         String bboxString = scanner.next();
 
-        //BBox to request incidents for Dresden
-        //String bboxString = "51.1809,13.5766;50.9766,13.9812";
+        logger.info("Bounding Box set to {}", bboxString);
 
         //get coordinates as double values
         Pattern pattern = Pattern.compile("[,;]");
@@ -232,21 +238,21 @@ public class ApiRequest {
                 try {
                     sendRequest(bbox.getBboxRequestString(), "incidents");
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.error("{}", e.getMessage());
                 }
 
                 // Parse answer or file
-                XMLParser parser = new XMLParser();
-                parser.parseXMLFromApi(answer, "incidents");
+                IncidentsXMLParser parser = new IncidentsXMLParser();
+                parser.parseXMLFromApi(answer);
                 // If you want to test out a file instead of the API
                 // parser.parseXMlFromFile("");
 
                 // Collect relevant data per incident and decoding location
                 DataCollector collector = new DataCollector();
                 try {
-                    collector.collectIncidentInformation(parser.getListIncidentTrafficItems());
+                    collector.collectIncidentInformation(parser.getTrafficItems());
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("{}", e.getMessage());
                 }
 
                 // Collects incident data and affected lines for all requested bounding boxes
@@ -258,22 +264,19 @@ public class ApiRequest {
                 try {
                     sendRequest(bbox.getBboxRequestString(), "flow");
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.error("{}", e.getMessage());
                 }
 
                 // Parse answer or file
-                XMLParser parser = new XMLParser();
-                parser.parseXMLFromApi(answer, "flow");
+                FlowXMLParser parser = new FlowXMLParser();
+                parser.parseXMLFromApi(answer);
                 // If you want to test out a file instead of the API
                 // parser.parseXMlFromFile("");
 
                 // Collect relevant flow data
                 DataCollector collector = new DataCollector();
-                try {
-                    collector.collectFlowInformation(parser.getListFlowItems());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+
+                collector.collectFlowInformation(parser.getFlowItems());
 
                 // Collects incident data and affected lines for all requested bounding boxes
                 flowItems.addAll(collector.getFlowItems());
@@ -292,6 +295,8 @@ public class ApiRequest {
      * @throws InvalidWGS84CoordinateException Coordinates out of WGS85 bounds
      */
     public void updateIncidentData() throws InvalidBboxException, InvalidWGS84CoordinateException {
+
+        logger.info("INCIDENTS:");
 
         // Get current timestamp
         Timestamp currentTimestamp = getTimeStamp();
@@ -325,12 +330,15 @@ public class ApiRequest {
             if (tempIncidentsTableExists.equals("openlr.temp_incidents")) {
                 ctx.dropTable(table(temp_kanten_incidents)).cascade().execute();
                 ctx.dropTable(table(temp_incidents)).cascade().execute();
+
+                logger.info("Dropped old temporary tables.");
             }
 
             // If the most recent entry in the incident table is younger than the time stamp when the program
             // was started, this message is printed.
             if (youngestEntry != null && currentTimestamp.before(youngestEntry)) {
-                System.out.println("The incident data is up to date, the data has not been updated.");
+
+                logger.info("The incident data is up to date, the data has not been updated.");
 
             } else {
                 // Create temporary incident table
@@ -390,6 +398,7 @@ public class ApiRequest {
                             .execute();
                 }
             }
+            logger.info("Created temporary tables.");
 
         }); // End first transaction
 
@@ -407,6 +416,8 @@ public class ApiRequest {
 
                 ctx.dropTable(table(kanten_incidents)).cascade().execute();
                 ctx.dropTable(table(incidents)).cascade().execute();
+
+                logger.info("Dropped old tables.");
             }
 
             // Rename temp tables and add foreign keys
@@ -435,8 +446,7 @@ public class ApiRequest {
                 "join openlr.incidents i on (ki.incident_id = i.incident_id)" +
                 "join openlr.kanten k on (ki.line_id = k.line_id);");
 
-
-        System.out.println("Program ended.");
+        logger.info("Updated incident data.");
     }
 
     /**
@@ -450,6 +460,8 @@ public class ApiRequest {
      * @throws InvalidWGS84CoordinateException Coordinates out of WGS85 bounds
      */
     public void updateFlowData() throws InvalidBboxException, InvalidWGS84CoordinateException {
+
+        logger.info("FLOW:");
 
         // Get current timestamp
         Timestamp currentTimestamp = getTimeStamp();
@@ -479,12 +491,15 @@ public class ApiRequest {
             // Deleting temp_ table if it exists, prevents program from running into "already exists"-Error
             if (tempflowTableExists.equals("openlr.temp_flow")) {
                 ctx.dropTable(table(temp_flow)).cascade().execute();
+
+                logger.info("Dropped old temporary table.");
             }
 
             // If the most recent entry in the flow table is younger than the time stamp when the program
             // was started, this message is printed.
             if (youngestEntry != null && currentTimestamp.before(youngestEntry)) {
-                System.out.println("The flow data is up to date, the data has not been updated.");
+
+                logger.info("The flow data is up to date, the data has not been updated.");
 
             } else {
                 // Create temporary flow table
@@ -515,6 +530,7 @@ public class ApiRequest {
                             .execute();
                 }
             }
+            logger.info("Created temporary table.");
 
         }); // End first transaction
 
@@ -528,18 +544,15 @@ public class ApiRequest {
         ctx.transaction(configuration2 -> {
 
             // Drop table with old data if exists
-            if (flowTableExists.equals("openlr.flow")) {
-
+            if (flowTableExists.equals("openlr.flow"))
+            {
                 ctx.dropTable(table(flow)).cascade().execute();
-            }
 
+                logger.info("Dropped old table.");
+            }
             // Rename temp table
             ctx.alterTable(temp_flow).renameTo(flow).execute();
 
         }); // End second transaction
-
-        System.out.println("Program ended.");
     }
-
-
 }

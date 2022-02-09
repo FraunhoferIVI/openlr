@@ -5,6 +5,8 @@ import Loader.RoutableOSMMapLoader;
 import openlr.location.Location;
 import openlr.map.Line;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -18,6 +20,8 @@ public class DataCollector {
     private List<Incident> incidents;
     private List<AffectedLine> affectedLines;
     private List<FlowItem> flowItems;
+
+    private static final Logger logger = LoggerFactory.getLogger(DataCollector.class);
 
     public DataCollector() {
         incidents = new ArrayList<>();
@@ -104,6 +108,7 @@ public class DataCollector {
             // Create incident and add to list
             incident2list(incidentId, type, status, start, end, criticality, openLRCode, shortDesc, longDesc, roadClosure, posOff, negOff);
         }
+        logger.info("Collected data.");
     }
 
     /**
@@ -113,8 +118,10 @@ public class DataCollector {
      *
      * @throws Exception Exception
      */
-    public void collectFlowInformation(@NotNull List<FlowItem> flowItemList) throws Exception {
+    public void collectFlowInformation(@NotNull List<FlowItem> flowItemList) {
         this.flowItems = flowItemList;
+
+        logger.info("Collected data.");
     }
 
     /**
