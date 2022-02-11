@@ -15,8 +15,11 @@ import java.util.List;
 
 public class DataCollector {
 
+    // List containing incident information
     private List<Incident> incidents;
+    // List containing affected line info (just for incidents right now)
     private List<AffectedLine> affectedLines;
+    // List containing traffic flow info
     private List<FlowItem> flowItems;
 
     public DataCollector() {
@@ -113,7 +116,8 @@ public class DataCollector {
      *
      * @throws Exception Exception
      */
-    public void collectFlowInformation(@NotNull List<FlowItem> flowItemList) throws Exception {
+    public void collectFlowInformation(@NotNull List<FlowItem> flowItemList) {
+        // just passes the flow information
         this.flowItems = flowItemList;
     }
 
