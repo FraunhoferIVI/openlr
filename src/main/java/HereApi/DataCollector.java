@@ -113,8 +113,6 @@ public class DataCollector {
      * Collects flow information for all flow items read from the XML.
      *
      * @param flowItemList List containing extracted flow items
-     *
-     * @throws Exception Exception
      */
     public void collectFlowInformation(@NotNull List<FlowItem> flowItemList) {
         // just passes the flow information
