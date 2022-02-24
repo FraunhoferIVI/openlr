@@ -36,8 +36,9 @@ import static org.jooq.sources.tables.Kanten.KANTEN;
 public class ApiRequest {
 
     //your API key
-    private final String hereApikey = "OOnP0DKtdmJcVaRywCD3T-QR5QUVbwGRTaJRLgItXjs";
+    private final String hereApikey = "agUEc-kNFCe2XlvDfmo4y8V3gLJrkuq3_P1XNnFI-0A";
     private String answer;
+    private List<BoundingBox> bboxes = new ArrayList<>();
 
     // Contains incident information for all requested bounding boxes
     private List<Incident> incidentList;
@@ -59,7 +60,7 @@ public class ApiRequest {
         try {
             ctx = DSL.using(DatasourceConfig.getConnection(), SQLDialect.POSTGRES);
         } catch (SQLException e) {
-            logger.error("{}", e.getMessage());
+            logger.error(e.getMessage());
         }
     }
 
@@ -110,22 +111,22 @@ public class ApiRequest {
 
         URL request = generateURL(bboxString, resource);
         HttpURLConnection con = (HttpURLConnection) request.openConnection();
+
         con.setRequestMethod("GET");
         con.setRequestProperty("Accept", "application/xml");
         int responseCode = con.getResponseCode();
+
         if (responseCode == HttpURLConnection.HTTP_OK) {
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(con.getInputStream()));
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
             StringBuilder response = new StringBuilder();
             String readLine;
-            while ((readLine = in .readLine()) != null) {
+            while ((readLine = in.readLine()) != null) {
                 response.append(readLine);
-            } in .close();
+            } in.close();
             answer = response.toString();
 
-        } else {
-            logger.error("GET Request failed");
-        }
+        } else { logger.error("GET Request failed"); }
+
         return answer;
     }
 
@@ -198,47 +199,59 @@ public class ApiRequest {
     }
 
     /**
-     * Checks the bounding box. For the Api Request, the request bounding box is limited to a
-     * maximum of 2 degrees (https://developer.here.com/documentation/traffic/dev_guide/topics/limitations.html).
-     * If the specified bounding box is too large, it is broken down into sufficiently small boxes.
-     * For each bounding box an API request is made, the XML file is parsed, the OpenLR code is decoded (for incidents)
-     * and the relevant information and affected lines are collected.
+     * Quadri-dissection of the Bounding box, if bigger than size.
+     *
+     * @param bbox Bounding box
+     * @param size maximum piece-size
+     *
+     * @return List<bbox>
+     */
+    public void quadriDissect(BoundingBox bbox, int size)
+    {
+        if ((bbox.width > size) || (bbox.height > size)) {
+
+            double topLat = bbox.getUpperLeftLat();
+            double leftLong = bbox.getUpperLeftLon();
+            double bottomLat = bbox.getBottomRightLat();
+            double rightLong = bbox.getBottomRightLon();
+            double halfHeight = bbox.getHeight() / 2;
+            double halfWidth = bbox.getWidth() / 2;
+
+            // top left
+            quadriDissect(new BoundingBox(topLat, leftLong,
+                    (topLat - (halfHeight)), (leftLong + (halfWidth))), size);
+            // top right
+            quadriDissect(new BoundingBox(topLat, (leftLong + (halfWidth)),
+                    (topLat - (halfHeight)), rightLong), size);
+            // bottom left
+            quadriDissect(new BoundingBox((topLat - (halfHeight)),
+                    leftLong, bottomLat, (leftLong + (halfWidth))), size);
+            // bottom right
+            quadriDissect(new BoundingBox((topLat - (halfHeight)),
+                    (leftLong + (halfWidth)), bottomLat, rightLong), size);
+        }
+        else { bboxes.add(bbox); }
+    }
+
+    /**
+     * Sends a Api Request, parses the replied XML, decodes the OpenLR code (for incidents)
+     * and collects the relevant information as well as affected lines.
      *
      * @param bbox Bounding box
      * @param resource "incidents"/"flow"
      */
     private void gatherTrafficInfo(@NotNull BoundingBox bbox, String resource) {
 
-        // Recursive bounding box query
-        if ((bbox.width > 10) || (bbox.height > 10)) {
+        quadriDissect(bbox, 10);
 
-            double upperLeftLat = bbox.getUpperLeftLat();
-            double upperLeftLon = bbox.getUpperLeftLon();
-            double bottomRightLat = bbox.getBottomRightLat();
-            double bottomRightLon = bbox.getBottomRightLon();
-            double halfHeight = bbox.getHeight() / 2;
-            double halfWidth = bbox.getWidth() / 2;
-
-            // top left
-            gatherTrafficInfo(new BoundingBox(upperLeftLat, upperLeftLon,
-                    (upperLeftLat - (halfHeight)), (upperLeftLon + (halfWidth))), resource);
-            // top right
-            gatherTrafficInfo(new BoundingBox(upperLeftLat, (upperLeftLon + (halfWidth)),
-                    (upperLeftLat - (halfHeight)), bottomRightLon), resource);
-            // bottom left
-            gatherTrafficInfo(new BoundingBox((upperLeftLat - (halfHeight)),
-                    upperLeftLon, bottomRightLat, (upperLeftLon - (halfWidth))), resource);
-            // bottom right
-            gatherTrafficInfo(new BoundingBox((upperLeftLat - (halfHeight)),
-                    (upperLeftLon + (halfWidth)), upperLeftLat, bottomRightLon), resource);
-        } else {
-
+        for (BoundingBox bounding : bboxes)
+        {
             if (resource.equals("incidents")) {
                 // Gets Here Api request answer
                 try {
-                    sendRequest(bbox.getBboxRequestString(), "incidents");
+                    sendRequest(bounding.getBboxRequestString(), "incidents");
                 } catch (IOException e) {
-                    logger.error("{}", e.getMessage());
+                    logger.error(e.getMessage());
                 }
 
                 // Parse answer or file
@@ -252,7 +265,7 @@ public class ApiRequest {
                 try {
                     collector.collectIncidentInformation(parser.getTrafficItems());
                 } catch (Exception e) {
-                    logger.error("{}", e.getMessage());
+                    logger.error(e.getMessage());
                 }
 
                 // Collects incident data and affected lines for all requested bounding boxes
@@ -262,9 +275,9 @@ public class ApiRequest {
             } else if (resource.equals("flow")) {
                 // Gets Here Api request answer
                 try {
-                    sendRequest(bbox.getBboxRequestString(), "flow");
+                    sendRequest(bounding.getBboxRequestString(), "flow");
                 } catch (IOException e) {
-                    logger.error("{}", e.getMessage());
+                    logger.error(e.getMessage());
                 }
 
                 // Parse answer or file

@@ -1,8 +1,5 @@
 package HereApi;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class FlowItem {
 
     private String id;
@@ -12,8 +9,6 @@ public class FlowItem {
     private double jamFactor;
     private double speedLimited;
     private double speed;
-
-    private static final Logger logger = LoggerFactory.getLogger(FlowItem.class);
 
     public FlowItem(String id, String name, double accuracy, double freeFlowSpeed,
                     double jamFactor, double speedLimited, double speed) {

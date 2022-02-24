@@ -17,8 +17,11 @@ import java.util.List;
 
 public class DataCollector {
 
+    // List containing incident information
     private List<Incident> incidents;
+    // List containing affected line info (just for incidents right now)
     private List<AffectedLine> affectedLines;
+    // List containing traffic flow info
     private List<FlowItem> flowItems;
 
     private static final Logger logger = LoggerFactory.getLogger(DataCollector.class);
@@ -115,8 +118,6 @@ public class DataCollector {
      * Collects flow information for all flow items read from the XML.
      *
      * @param flowItemList List containing extracted flow items
-     *
-     * @throws Exception Exception
      */
     public void collectFlowInformation(@NotNull List<FlowItem> flowItemList) {
         this.flowItems = flowItemList;

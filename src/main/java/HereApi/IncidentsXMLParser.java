@@ -40,11 +40,14 @@ public class IncidentsXMLParser {
             DocumentBuilder builder = factory.newDocumentBuilder();
             try {
                 Document document = builder.parse(new File(path));
-
                 parseXML(document);
 
-            } catch (SAXException | IOException e) { logger.warn(e.getMessage()); }
-        } catch (ParserConfigurationException e) { logger.warn(e.getMessage()); }
+            } catch (SAXException | IOException e) {
+                e.printStackTrace();
+            }
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -60,8 +63,8 @@ public class IncidentsXMLParser {
                 Document document = builder.parse(new InputSource(new StringReader(requestAnswer)));
                 parseXML(document);
 
-            } catch (SAXException | IOException e) { logger.warn(e.getMessage()); }
-        } catch (ParserConfigurationException e) { logger.warn(e.getMessage()); }
+            } catch (SAXException | IOException e) { logger.error(e.getMessage()); }
+        } catch (ParserConfigurationException e) { logger.error(e.getMessage()); }
     }
 
     /**
@@ -75,6 +78,7 @@ public class IncidentsXMLParser {
         document.getDocumentElement().normalize();
 
         NodeList trafficItems = document.getElementsByTagName("TRAFFIC_ITEM");
+        int numberOfTrafficItems = trafficItems.getLength();
 
         for (int node = 0; node < trafficItems.getLength(); node++) {
 
