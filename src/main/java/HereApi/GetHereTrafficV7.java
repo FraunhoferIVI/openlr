@@ -62,7 +62,7 @@ public class GetHereTrafficV7
      *
      * @param resource "incidents" or "flow"
      */
-    public void request(String resource) throws IOException
+    private String request(String resource) throws IOException
     {
         HttpClient httpClient = HttpClient.newBuilder().build();
         HttpRequest httpRequest = HttpRequest.newBuilder()
@@ -82,13 +82,35 @@ public class GetHereTrafficV7
                 String line;
 
                 while ((line = reader.readLine()) != null) { response.append(line); }
-                String json = response.toString();
-
-                System.out.println(resource + "JSON: " + json);
+                return response.toString();
 
             } else { logger.error("GET Request failed"); }
         }
         catch (InterruptedException e) { logger.error(e.getMessage()); }
+
+        return null;
+    }
+
+    public void getInformation(String resource)
+    {
+        String json = null;
+
+        getToken();
+        try { json = request(resource);
+        } catch (IOException e) { logger.error(e.getMessage()); }
+
+        if (resource.equals("flow"))
+        {
+            FlowV7Parser parser = new FlowV7Parser();
+
+            parser.parse(json);
+
+        } else
+        {
+            IncidentsV7Parser parser = new IncidentsV7Parser();
+
+            parser.parse(json);
+        }
     }
 }
 
