@@ -111,6 +111,6 @@ cd Here2OSM
 mvn clean install
 ```
 ```bash
-java -jar target\here2osm-1.0-SNAPSHOT.jar
+java -jar target\here2osm.jar
 ```
 * supply the bounding box of your map as WGS84 coordinates *([Northwest latitude],[Northwest longitude];[Southeast latitude],[Southeast longitude])* e.g.: 53.60,9.85;53.50,10.13 (hamburg)
