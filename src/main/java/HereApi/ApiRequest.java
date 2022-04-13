@@ -41,18 +41,12 @@ public class ApiRequest {
     private List<BoundingBox> bboxes = new ArrayList<>();
 
     // Contains incident information for all requested bounding boxes
-    private List<Incident> incidentList;
+    private List<Incident> incidentList = new ArrayList<>();
     // Contains affected lines for all requested bounding boxes
-    private List<AffectedLine> affectedLinesList;
-    private List<FlowItem> flowItems;
+    private List<AffectedLine> affectedLinesList = new ArrayList<>();
+    private List<FlowItem> flowItems = new ArrayList<>();
 
     private static final Logger logger = LoggerFactory.getLogger(ApiRequest.class);
-
-    public ApiRequest() {
-        this.incidentList = new ArrayList<>();
-        this.affectedLinesList = new ArrayList<>();
-        this.flowItems = new ArrayList<>();
-    }
 
     // needed for SQL queries
     static DSLContext ctx;
@@ -71,7 +65,7 @@ public class ApiRequest {
      * @param table  Name of the table to be checked.
      * @return Field to use in select query.
      */
-    public static Field<?> to_regclass(String schema, String table) {
+    private static Field<?> to_regclass(String schema, String table) {
 
         String query = "to_regclass('" + schema + "." + table + "')";
         return DSL.field(query);
@@ -199,14 +193,14 @@ public class ApiRequest {
     }
 
     /**
-     * Quadri-dissection of the Bounding box, if bigger than size.
+     * Quad-Tree-dissection of the Bounding box, if bigger than size.
      *
      * @param bbox Bounding box
      * @param size maximum piece-size
      *
      * @return List<bbox>
      */
-    public void quadriDissect(BoundingBox bbox, int size)
+    private void quadTreeDissect(BoundingBox bbox, int size)
     {
         if ((bbox.width > size) || (bbox.height > size)) {
 
@@ -218,16 +212,16 @@ public class ApiRequest {
             double halfWidth = bbox.getWidth() / 2;
 
             // top left
-            quadriDissect(new BoundingBox(topLat, leftLong,
+            quadTreeDissect(new BoundingBox(topLat, leftLong,
                     (topLat - (halfHeight)), (leftLong + (halfWidth))), size);
             // top right
-            quadriDissect(new BoundingBox(topLat, (leftLong + (halfWidth)),
+            quadTreeDissect(new BoundingBox(topLat, (leftLong + (halfWidth)),
                     (topLat - (halfHeight)), rightLong), size);
             // bottom left
-            quadriDissect(new BoundingBox((topLat - (halfHeight)),
+            quadTreeDissect(new BoundingBox((topLat - (halfHeight)),
                     leftLong, bottomLat, (leftLong + (halfWidth))), size);
             // bottom right
-            quadriDissect(new BoundingBox((topLat - (halfHeight)),
+            quadTreeDissect(new BoundingBox((topLat - (halfHeight)),
                     (leftLong + (halfWidth)), bottomLat, rightLong), size);
         }
         else { bboxes.add(bbox); }
@@ -242,7 +236,7 @@ public class ApiRequest {
      */
     private void gatherTrafficInfo(@NotNull BoundingBox bbox, String resource) {
 
-        quadriDissect(bbox, 10);
+        quadTreeDissect(bbox, 10);
 
         for (BoundingBox bounding : bboxes)
         {

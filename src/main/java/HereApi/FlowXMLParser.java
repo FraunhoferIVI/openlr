@@ -10,20 +10,14 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 public class FlowXMLParser {
 
-    private List<FlowItem> flowItems;
+    private List<FlowItem> flowItems = new ArrayList<>();
 
     private static final Logger logger = LoggerFactory.getLogger(FlowXMLParser.class);
-
-    public FlowXMLParser()
-    {
-        flowItems = new ArrayList<>();
-    }
 
     public List<FlowItem> getFlowItems() { return flowItems; }
 

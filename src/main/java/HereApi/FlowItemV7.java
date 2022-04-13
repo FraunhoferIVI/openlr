@@ -4,8 +4,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class FlowItemV7 {
 
-    // TODO add junktionTraversability
-
+    // TODO alle Nullable
     @Nullable
     private String name;
     private String olr;
@@ -17,9 +16,11 @@ public class FlowItemV7 {
     private Double jamFactor;
     private Double confidence;
     private String traversability;
+    private JunctionTraversability junctionTraversability;
 
-    public FlowItemV7(String name, String olr, Double speed, Double speedUncapped, Double freeFlow,
-                      Double jamFactor, Double confidence, String traversability)
+    public FlowItemV7(@Nullable String name, String olr, Double speed, Double speedUncapped, Double freeFlow,
+                      Double jamFactor, Double confidence, String traversability,
+                      JunctionTraversability junctionTraversability )
     {
         this.name = name;
         this.olr = olr;
@@ -29,6 +30,7 @@ public class FlowItemV7 {
         this.jamFactor = jamFactor;
         this.confidence = confidence;
         this.traversability = traversability;
+        this.junctionTraversability = junctionTraversability;
     }
 
     @Override
@@ -37,11 +39,12 @@ public class FlowItemV7 {
                 "name: " + name +
                 ", olr: " + olr +
                 ", speed: " + speed +
-                ", speedUncapped: " + speedUncapped +
-                ", freeFlow: " + freeFlow +
-                ", jamFactor: " + jamFactor +
+                ", speed uncapped: " + speedUncapped +
+                ", free flow speed: " + freeFlow +
+                ", jam factor: " + jamFactor +
                 ", confidence: " + confidence +
                 ", traversability: " + traversability +
+                ", junction traversability: " + junctionTraversability +
                 '}';
     }
 
@@ -90,4 +93,15 @@ public class FlowItemV7 {
      * reversibleNotRoutable - the roadway is reversible and currently not routable
      */
     public String getTraversability() { return traversability; }
+
+    /**
+     * Used for road closures to indicate if the junctions along the closure can be crossed.
+     * can be:
+     * ALL_OPEN
+     * ALL_CLOSED
+     * INTERMEDIATE_CLOSED_EDGE_OPEN
+     * START_OPEN_OTHERS_CLOSED
+     * END_OPEN_OTHERS_CLOSED
+     */
+    public JunctionTraversability getJunctionTraversability() { return junctionTraversability; }
 }

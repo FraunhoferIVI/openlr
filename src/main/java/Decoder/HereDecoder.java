@@ -1,6 +1,7 @@
 package Decoder;
 
 import Exceptions.InvalidHereOLRException;
+import HereApi.ApiRequest;
 import HereDecoder.IntermediateReferencePoint;
 import HereDecoder.LinearLocationReference;
 import HereDecoder.OpenLocationReference;
@@ -20,6 +21,8 @@ import openlr.properties.OpenLRPropertiesReader;
 import openlr.rawLocRef.RawLineLocRef;
 import openlr.rawLocRef.RawLocationReference;
 import org.apache.commons.configuration.FileConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -37,6 +40,8 @@ import java.util.List;
  */
 
 public class HereDecoder {
+
+    private static final Logger logger = LoggerFactory.getLogger(ApiRequest.class);
 
     /**
      * Gets the OpenLR FOW Enum depending on the given FOW integer value
@@ -136,9 +141,9 @@ public class HereDecoder {
      *
      * @param openLRCode OpenLR Base64 String
      * @return location
-     * @throws Exception Invalide HERE Location
+     * @throws Exception Invalid HERE Location
      */
-    public Location decodeHere(String openLRCode, RoutableOSMMapLoader osmMapLoader) throws Exception {
+    public Location decodeHere(String openLRCode) throws Exception {
 
         // Gets Open Location Reference from Base64 String
         OpenLocationReference olr = OpenLocationReference.fromBase64TpegOlr(openLRCode);
@@ -151,12 +156,21 @@ public class HereDecoder {
             return null;
         }
 
+        // Initialize OSM Database Loader and close connection
+        RoutableOSMMapLoader osmMapLoader = null;
+        try {
+            osmMapLoader = new RoutableOSMMapLoader();
+            osmMapLoader.close();
+        } catch (Exception e) { logger.error(e.getMessage()); }
+
         // Initialize database
         MapDatabase mapDatabase = new MapDatabaseImpl(osmMapLoader);
 
         // Decoder parameter, properties for writing on map database
-        FileConfiguration decoderConfig = OpenLRPropertiesReader.loadPropertiesFromFile(new File(this.getClass().getClassLoader().getResource("OpenLR-Decoder-Properties.xml").getFile()));
-        OpenLRDecoderParameter params = new OpenLRDecoderParameter.Builder().with(mapDatabase).with(decoderConfig).buildParameter();
+        FileConfiguration decoderConfig = OpenLRPropertiesReader.loadPropertiesFromFile(new File(
+                this.getClass().getClassLoader().getResource("OpenLR-Decoder-Properties.xml").getFile()));
+        OpenLRDecoderParameter params = new OpenLRDecoderParameter.Builder().with(mapDatabase)
+                .with(decoderConfig).buildParameter();
 
         //Initialize the OpenLR decoder
         OpenLRDecoder decoder = new openlr.decoder.OpenLRDecoder();

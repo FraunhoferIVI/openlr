@@ -1,31 +1,39 @@
 package HereApi;
 
+import Decoder.HereDecoder;
 import com.google.gson.*;
+import openlr.location.Location;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.StringReader;
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FlowV7Parser {
+public class FlowJsonParser {
 
-    List<FlowItemV7> flowItems = new ArrayList<>();
+    private Timestamp updated;
+    private List<FlowItemV7> flowItems = new ArrayList<>();
+
+    private static final Logger logger = LoggerFactory.getLogger(FlowJsonParser.class);
+
+    public Timestamp getUpdated() { return updated; }
+
+    public List<FlowItemV7> getFlowItems() { return flowItems; }
 
     /**
      * Reads out the supplied json String for flow Information and stores it in a List of Flow-Items.
-     * test run: 98 ms
      *
      * @param json flow Information got from the Here-Traffic Api (v7)
      */
     public void parse(String json)
     {
-        System.out.println(System.currentTimeMillis());
-
         // cast Json String to Object to work with it
         JsonObject jsonObject = JsonParser.parseReader(new StringReader(json)).getAsJsonObject();
 
-        LocalDateTime updated = LocalDateTime.parse(jsonObject.get("sourceUpdated").getAsString()
-                .substring(0, 19));
+        String updatedStr = jsonObject.get("sourceUpdated").getAsString().substring(0, 19).replace('T', ' ');
+        updated = Timestamp.valueOf(updatedStr);
 
         JsonArray results = jsonObject.get("results").getAsJsonArray();
 
@@ -59,45 +67,14 @@ public class FlowV7Parser {
 
             String traversability = currentFlow.get("traversability").getAsString();
 
+            String juncTravS;
+            try { juncTravS = currentFlow.get("junctionTraversability").getAsString(); }
+            catch (Exception e) { juncTravS = ""; }
+            JunctionTraversability juncTrav = JunctionTraversability.get(juncTravS);
+
             FlowItemV7 item = new FlowItemV7(name, olr, speed, speedUncapped, freeFlow, jamFactor,
-                    confidence, traversability);
+                    confidence, traversability, juncTrav);
             flowItems.add(item);
         }
-        System.out.println(System.currentTimeMillis());
-
-        System.out.println(flowItems.get(10));
     }
-
-    /**
-     * test run: 495 ms (5 times slower)
-     *
-     * @param json the json resource as String
-     */
-    public void parseV2(String json)
-    {
-        System.out.println(System.currentTimeMillis());
-
-        // cast Json String to Object
-        JsonObject jsonObject = JsonParser.parseReader(new StringReader(json)).getAsJsonObject();
-
-        String updated = jsonObject.get("sourceUpdated").getAsString();
-
-        JsonArray results = jsonObject.get("results").getAsJsonArray();
-
-        for (JsonElement flowElement : results)
-        {
-            JsonObject flowObject = flowElement.getAsJsonObject();
-            JsonElement location = flowObject.get("location");
-            JsonElement currentFlow = flowObject.get("currentFlow");
-
-            FlowItemV7 flow = new Gson().fromJson(location, FlowItemV7.class);
-            flow = new Gson().fromJson(currentFlow, FlowItemV7.class);
-
-            flowItems.add(flow);
-        }
-        System.out.println(System.currentTimeMillis());
-
-        System.out.println(flowItems.get(10));
-    }
-
 }

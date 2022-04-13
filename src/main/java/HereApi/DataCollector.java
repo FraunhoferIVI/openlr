@@ -1,7 +1,6 @@
 package HereApi;
 
 import Decoder.HereDecoder;
-import Loader.RoutableOSMMapLoader;
 import openlr.location.Location;
 import openlr.map.Line;
 import org.jetbrains.annotations.NotNull;
@@ -18,25 +17,17 @@ import java.util.List;
 public class DataCollector {
 
     // List containing incident information
-    private List<Incident> incidents;
+    private List<Incident> incidents = new ArrayList<>();
     // List containing affected line info (just for incidents right now)
-    private List<AffectedLine> affectedLines;
+    private List<AffectedLine> affectedLines = new ArrayList<>();
     // List containing traffic flow info
-    private List<FlowItem> flowItems;
+    private List<FlowItem> flowItems = new ArrayList<>();
 
     private static final Logger logger = LoggerFactory.getLogger(DataCollector.class);
 
-    public DataCollector() {
-        incidents = new ArrayList<>();
-        affectedLines = new ArrayList<>();
-        flowItems = new ArrayList<>();
-    }
-
     public List<Incident> getIncidents() { return incidents; }
 
-    public List<AffectedLine> getAffectedLines() {
-        return affectedLines;
-    }
+    public List<AffectedLine> getAffectedLines() { return affectedLines; }
 
     public List<FlowItem> getFlowItems() { return flowItems; }
 
@@ -68,10 +59,6 @@ public class DataCollector {
 
         // Initialize Decoder for HERE OpenLR Codes.
         HereDecoder decoderHere = new HereDecoder();
-        // Initialize OSM Database Loader
-        RoutableOSMMapLoader osmMapLoader = new RoutableOSMMapLoader();
-        //Close Database connection
-        osmMapLoader.close();
 
         for (TrafficItem trafficItemObject : trafficItemList) {
 
@@ -90,7 +77,7 @@ public class DataCollector {
             boolean roadClosure = Boolean.parseBoolean(trafficItemObject.getClosure());
 
             // Reads out TPEG-OLR Locations
-            Location location = decoderHere.decodeHere(openLRCode, osmMapLoader);
+            Location location = decoderHere.decodeHere(openLRCode);
 
             int posOff;
             int negOff;
