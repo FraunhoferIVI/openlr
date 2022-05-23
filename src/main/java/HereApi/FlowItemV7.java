@@ -1,26 +1,38 @@
 package HereApi;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class FlowItemV7 {
 
-    // TODO alle Nullable
     @Nullable
     private String name;
+    @NotNull
     private String olr;
     @Nullable
     private Double speed;
     @Nullable
     private Double speedUncapped;
+    @Nullable
     private Double freeFlow;
+    @Nullable
     private Double jamFactor;
+    @Nullable
     private Double confidence;
+    @Nullable
     private String traversability;
+    @Nullable
     private JunctionTraversability junctionTraversability;
+    @Nullable
+    private Integer posoff;
+    @Nullable
+    private Integer negoff;
 
-    public FlowItemV7(@Nullable String name, String olr, Double speed, Double speedUncapped, Double freeFlow,
-                      Double jamFactor, Double confidence, String traversability,
-                      JunctionTraversability junctionTraversability )
+    public FlowItemV7(@Nullable String name, @NotNull String olr, @Nullable Double speed,
+                      @Nullable Double speedUncapped, @Nullable Double freeFlow,
+                      @Nullable Double jamFactor, @Nullable Double confidence,
+                      @Nullable String traversability, @Nullable JunctionTraversability junctionTraversability,
+                      @Nullable Integer posoff, @Nullable Integer negoff)
     {
         this.name = name;
         this.olr = olr;
@@ -31,6 +43,27 @@ public class FlowItemV7 {
         this.confidence = confidence;
         this.traversability = traversability;
         this.junctionTraversability = junctionTraversability;
+        this.posoff = posoff;
+        this.negoff = negoff;
+    }
+
+    public boolean isInvalid()
+    {
+        if(speed == null)
+            return true;
+        if(speedUncapped == null)
+            return true;
+        if(freeFlow == null)
+            return true;
+        if(jamFactor == null)
+            return true;
+        if(confidence == null)
+            return true;
+        if(posoff == null)
+            return true;
+        if(negoff == null)
+            return true;
+        return false;
     }
 
     @Override
@@ -45,34 +78,42 @@ public class FlowItemV7 {
                 ", confidence: " + confidence +
                 ", traversability: " + traversability +
                 ", junction traversability: " + junctionTraversability +
+                ", posoff: " + posoff +
+                ", negoff: " + negoff +
                 '}';
     }
 
     @Nullable
     public String getName() { return name; }
 
+    @NotNull
     public String getOlr() { return olr; }
 
     /**
      * expected speed along the roadway; doesn't exceed the legal speed limit.
+     * presumably given in meter/second
      */
     @Nullable
     public Double getSpeed() { return speed; }
 
     /**
      * expected speed along the roadway; may exceed the legal speed limit
+     * presumably given in meter/second
      */
     @Nullable
     public Double getSpeedUncapped() { return speedUncapped; }
 
     /**
      * reference speed along the roadway when no traffic is present.
+     * presumably given in meter/second
      */
+    @Nullable
     public Double getFreeFlow() { return freeFlow; }
 
     /**
      * value between 0 and 10; the higher the more traffic. 10 stands for road closure.
      */
+    @Nullable
     public Double getJamFactor() { return jamFactor; }
 
     /**
@@ -83,6 +124,7 @@ public class FlowItemV7 {
      * 0.5 < confidence <= 0.7 indicates historical speeds
      * 0.0 < confidence <= 0.5 indicates speed limit
      */
+    @Nullable
     public Double getConfidence() { return confidence; }
 
     /**
@@ -92,6 +134,7 @@ public class FlowItemV7 {
      * closed - the roadway cannot be driven (jamFactor is 10.0)
      * reversibleNotRoutable - the roadway is reversible and currently not routable
      */
+    @Nullable
     public String getTraversability() { return traversability; }
 
     /**
@@ -103,5 +146,16 @@ public class FlowItemV7 {
      * START_OPEN_OTHERS_CLOSED
      * END_OPEN_OTHERS_CLOSED
      */
+    @Nullable
     public JunctionTraversability getJunctionTraversability() { return junctionTraversability; }
+
+    @Nullable
+    public Integer getPosoff() {
+        return posoff;
+    }
+
+    @Nullable
+    public Integer getNegoff() {
+        return negoff;
+    }
 }

@@ -1,8 +1,12 @@
 import Exceptions.InvalidBboxException;
 import Exceptions.InvalidWGS84CoordinateException;
 import HereApi.ApiRequest;
+import HereApi.HereTrafficV7;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.sql.Time;
+import java.sql.Timestamp;
 
 public class Here2Osm {
 
@@ -11,13 +15,16 @@ public class Here2Osm {
     // mainMethode
     public static void main(String[] args) {
 
-        ApiRequest request = new ApiRequest();
-        try {
-            request.updateIncidentData();
-            request.updateFlowData();
-        } catch (InvalidBboxException | InvalidWGS84CoordinateException e) {
-            logger.error("Failed to read incident and flow data due to a invalid bounding box. Message: {}", e.getMessage(), e);
-        }
-        logger.info("Program ended.");
+        long start = System.currentTimeMillis();
+
+        HereTrafficV7 request = new HereTrafficV7();
+        request.setBbox("10.000,53.500,10.050,53.550");
+        request.update("incidents");
+
+        long end = System.currentTimeMillis();
+        Time duration = new Time(end - start - 3_600_000);
+
+        System.out.println(end - start);
+        logger.info("Program ended. Duration: " + duration);
     }
 }

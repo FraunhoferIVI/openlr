@@ -1,9 +1,14 @@
 package HereApi;
 
+import Decoder.HereDecoder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import openlr.location.Location;
+import openlr.map.Line;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.StringReader;
 import java.sql.Timestamp;
@@ -13,33 +18,79 @@ import java.util.List;
 public class IncidentsJsonParser {
 
     private Timestamp updated;
-    List<IncidentItemV7> incidents = new ArrayList<>();
+    private final List<IncidentItemV7> incidents = new ArrayList<>();
+    private final List<AffectedLine> affectedLines = new ArrayList<>();
 
-    public Timestamp getUpdated() { return updated; }
+    private static final Logger logger = LoggerFactory.getLogger(IncidentsJsonParser.class);
 
-    public List<IncidentItemV7> getIncidentItems() { return incidents; }
+    public Timestamp getUpdated() {
+        return updated;
+    }
+
+    public List<IncidentItemV7> getIncidentItems() {
+        return incidents;
+    }
+
+    public List<AffectedLine> getAffectedLines() {
+        return affectedLines;
+    }
+
+    /**
+     * Extracts affected lines from decoded location. Adds incident id, line and positive / negative offset to List.
+     *
+     * @param location   Location decoded by the OpenLR code
+     * @param incidentId Incident id
+     * @param posOff     From location extracted positive offset, defines the distance between the start of the
+     *                   location reference path and the start of the location
+     * @param negOff     From location extracted negative offset, defines the distance between the end of the
+     *                   location and the end of the location reference path
+     */
+    private void getAffectedLines(Location location, String incidentId, int posOff, int negOff) {
+        // decode location, extract list of affected lines
+        List<Line> listLines = location.getLocationLines();
+        AffectedLine affectedLine = null;
+
+        if (listLines != null && !listLines.isEmpty()) {
+            for (int i = 0; i < listLines.size(); i++) {
+                if (i == 0) {
+                    affectedLine = new AffectedLine(listLines.get(i).getID(), incidentId);
+                    affectedLine.setPosOff(posOff);
+                }
+                if (i == listLines.size() - 1) {
+                    affectedLine = new AffectedLine(listLines.get(i).getID(), incidentId);
+                    affectedLine.setNegOff(negOff);
+                }
+                if (i != 0 && (i != listLines.size() - 1)) {
+                    affectedLine = new AffectedLine(listLines.get(i).getID(), incidentId);
+                }
+                this.affectedLines.add(affectedLine);
+            }
+        }
+    }
 
     /**
      * Reads out the supplied json String for incident Information and stores it in a List of Incident-Items.
      *
      * @param json incident Information got from the Here-Traffic Api (v7)
      */
-    public void parse(String json)
-    {
+    public void parse(String json) {
         // cast Json String to Object
         JsonObject jsonObject = JsonParser.parseReader(new StringReader(json)).getAsJsonObject();
 
         updated = Timestamp.valueOf(jsonObject.get("sourceUpdated").getAsString().substring(0, 19)
                 .replace('T', ' '));
 
+        // Initialize Decoder for HERE OpenLR Codes.
+        HereDecoder decoderHere = new HereDecoder();
+
         JsonArray results = jsonObject.get("results").getAsJsonArray();
+        int resultCount = results.size();
 
-        for (JsonElement incidentElement : results)
-        {
-            JsonObject incident = incidentElement.getAsJsonObject();
-            JsonObject location = incident.get("location").getAsJsonObject();
+        for (int i = 0; i < resultCount; i++) {
+            JsonObject incident = results.get(i).getAsJsonObject();
+            JsonObject locationObj = incident.get("location").getAsJsonObject();
 
-            String olr = location.get("olr").getAsString();
+            String olr = locationObj.get("olr").getAsString();
 
             JsonObject details = incident.get("incidentDetails").getAsJsonObject();
 
@@ -52,16 +103,37 @@ public class IncidentsJsonParser {
             Boolean roadClosed = details.get("roadClosed").getAsBoolean();
 
             String juncTravStr;
-            try { juncTravStr = details.get("junctionTraversability").getAsString(); }
-            catch (Exception e) { juncTravStr = ""; }
+            try {
+                juncTravStr = details.get("junctionTraversability").getAsString();
+            } catch (Exception e) {
+                juncTravStr = "";
+            }
             JunctionTraversability juncTrav = JunctionTraversability.get(juncTravStr);
 
             String description = details.get("description").getAsJsonObject().get("value").getAsString();
             String summary = details.get("summary").getAsJsonObject().get("value").getAsString();
 
-            IncidentItemV7 item = new IncidentItemV7(id, originalId, olr, startTime, endTime, roadClosed,
-                    description, summary, juncTrav);
-            incidents.add(item);
+            // Reads out TPEG-OLR Locations
+            Location location = null;
+            try {
+                location = decoderHere.decodeHere(olr);
+                Integer posOff = null;
+                Integer negOff = null;
+                if (location != null) {
+                    posOff = location.getPositiveOffset();
+                    negOff = location.getNegativeOffset();
+
+                    getAffectedLines(location, id, posOff, negOff);
+                }
+
+                IncidentItemV7 item = new IncidentItemV7(id, originalId, olr, startTime, endTime, roadClosed,
+                        description, summary, juncTrav, posOff, negOff);
+                incidents.add(item);
+            }
+            catch (Exception e) { logger.error(e.getMessage()); }
+
+            // print progress
+            System.out.println("Progress: " + (i + 1) + "/" + resultCount + " (" + (int) ((double) (i + 1) / resultCount * 100) + "%)");
         }
     }
 }
