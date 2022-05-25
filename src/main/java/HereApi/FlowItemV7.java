@@ -111,7 +111,7 @@ public class FlowItemV7 {
     public Double getFreeFlow() { return freeFlow; }
 
     /**
-     * value between 0 and 10; the higher the more traffic. 10 stands for road closure.
+     * value between 0 and 10; the higher, the more traffic. 10 stands for road closure.
      */
     @Nullable
     public Double getJamFactor() { return jamFactor; }

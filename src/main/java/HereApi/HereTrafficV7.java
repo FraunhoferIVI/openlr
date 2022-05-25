@@ -28,7 +28,6 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import static org.jooq.impl.DSL.*;
-import static org.jooq.impl.DSL.table;
 import static org.jooq.sources.tables.Kanten.KANTEN;
 
 public class HereTrafficV7
@@ -420,16 +419,7 @@ public class HereTrafficV7
             ctx.dropTable(DSL.table(incident_affected_v7)).cascade().execute();
         }
 
-        // Create QGIS view containing incident_affected_v7 lines
-        /* ctx.execute("CREATE TABLE openlr.incident_affected_v7 AS select k.line_id, k.name, " +
-                "i.incident_id, i.original_id, i.start_time, i.end_time, i.road_closed, " +
-                "i.description, i.summary, i.junction_traversability, \n" +
-                "k.geom from openlr.kanten_incidents_v7 ki \n" +
-                "join openlr.incidents_v7 i on (ki.incident_id = i.incident_id) \n" +
-                "join openlr.kanten k on (ki.line_id = k.line_id);");
-
-         */
-
+        // Create QGIS view containing flow_affected_v7 lines
         ctx.transaction(configuration3 -> {
             DSL.using(configuration3).createTable(incident_affected_v7).as(
                     select(KANTEN.LINE_ID, KANTEN.NAME, IncidentsV7.INCIDENTS_V7.INCIDENT_ID, IncidentsV7.INCIDENTS_V7.ORIGINAL_ID,
@@ -479,7 +469,7 @@ public class HereTrafficV7
             // Create temporary flow table
             DSL.using(configuration1).createTable(temp_flow_v7)
                     .column("name", SQLDataType.CHAR(50))
-                    .column("olr", SQLDataType.CHAR(64))
+                    .column("olr", SQLDataType.CHAR(255))
                     .column("speed", SQLDataType.DOUBLE.nullable(true))
                     .column("speed_uncapped", SQLDataType.DOUBLE.nullable(true))
                     .column("free_flow_speed", SQLDataType.DOUBLE.nullable(true))
@@ -619,8 +609,20 @@ public class HereTrafficV7
                 "k.geom from openlr.kanten_flow_v7 kf \n" +
                 "join openlr.flow_v7 f on (kf.olr = f.olr) \n" +
                 "join openlr.kanten k on (kf.line_id = k.line_id);");
+/*
+        ctx.transaction(configuration3 -> {
+            DSL.using(configuration3).createTable(flow_affected_v7).as(
+                    select(KANTEN.LINE_ID, KANTEN.NAME, Fl, IncidentsV7.INCIDENTS_V7.ORIGINAL_ID,
+                            IncidentsV7.INCIDENTS_V7.START_TIME, IncidentsV7.INCIDENTS_V7.END_TIME,
+                            IncidentsV7.INCIDENTS_V7.ROAD_CLOSED, IncidentsV7.INCIDENTS_V7.DESCRIPTION,
+                            IncidentsV7.INCIDENTS_V7.SUMMARY, IncidentsV7.INCIDENTS_V7.JUNCTION_TRAVERSABILITY,
+                            KANTEN.GEOM).from(DSL.table(kanten_incidents_v7))
+                            .join(incidents_v7).on(KantenIncidentsV7.KANTEN_INCIDENTS_V7.INCIDENT_ID.eq(IncidentsV7.INCIDENTS_V7.INCIDENT_ID))
+                            .join(kanten).on(KantenIncidentsV7.KANTEN_INCIDENTS_V7.LINE_ID.eq(Kanten.KANTEN.LINE_ID))
+            ).execute();
+        });
 
-        // ctx.createTable().as(ctx.select())
+ */
         logger.info("Updated incident data.");
     }
 }

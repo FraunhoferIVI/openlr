@@ -20,11 +20,11 @@ public class Here2Osm {
         HereTrafficV7 request = new HereTrafficV7();
         request.setBbox("10.000,53.500,10.050,53.550");
         request.update("incidents");
+        request.update("flow");
 
         long end = System.currentTimeMillis();
         Time duration = new Time(end - start - 3_600_000);
 
-        System.out.println(end - start);
         logger.info("Program ended. Duration: " + duration);
     }
 }

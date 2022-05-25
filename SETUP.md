@@ -45,6 +45,7 @@ Download and install [DBeaver](https://dbeaver.io/download/)
     * type "View advanced system Settings" in the Start Menu and open it
     * click *Environment Variables* in the bottom right, than *Path* in the top  List and *Edit*
     * click *new* in the top right and paste the Path you copied earlier
+    * click *ok* on all opened Windows
 
 ### [OSM data](https://download.geofabrik.de/)
 * Download an osm *.pbf file of your choice
@@ -97,7 +98,7 @@ After running your database should look as follows:
 * Clone this project
     * Fork it **(optional)**
     * click *Code* (green button) and copy the HTTP-Adress
-    * In a Command Prompt cd to a location you want the project in and execute
+    * In a Command Prompt navigate to a location you want the project in and execute
     ```bash
     git clone <HTTP-Adress>
     ```
@@ -113,4 +114,11 @@ mvn clean install
 ```bash
 java -jar target\here2osm-1.0-SNAPSHOT.jar
 ```
-* supply the bounding box of your map as WGS84 coordinates *([Northwest latitude],[Northwest longitude];[Southeast latitude],[Southeast longitude])* e.g.: 53.60,9.85;53.50,10.13 (hamburg)
+* supply the bounding box of your map as follows: *([Southwest longitude],[Southwest latitude],[Northeast longitude],[Northeast latitude])* e.g.: 9.850,53.500,10.130,53.600 for hamburg
+  * in script (Here2Osm.java) line 21
+  * in the command Prompt by replacing line 21 with 
+  ```bash
+  request.insertBbox();
+  ```
+* run *Here2Osm.java*
+  
