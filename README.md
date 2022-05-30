@@ -45,12 +45,12 @@ For more detailed information see [TABLES](TABLES.md)
 ### FAQs
 ***
 1. **Is there a database example?**
-_Yes, check out the HOWTO file_. 
+_Yes, check out [SETUP](SETUP.md). 
 2. **Can you decode a TomTom OpenLR location?**
 _You can find the decoder to be used in the TomTomDecoder class._ 
 3. **How do you visualize the data in QGIS?**
 _Check this [video](https://www.youtube.com/watch?v=17AZQ2-5Rrk)._
-4. **Can I use a different spatial database?** _Yes, it is possible to use another spatial databse. But you need to implement your own map loader using the [MapLoader Interface](src/main/java/Loader/MapLoader.java). In addition, changes in the pom.xml (database connection and Jooq dialect), the DatasourceConfig class and the ApiRequest class must be made._ 
+4. **Can I use a different spatial database?** _Yes, it is possible to use another spatial database. But you need to implement your own map loader using the [MapLoader Interface](src/main/java/Loader/MapLoader.java). In addition, changes in the pom.xml (database connection and Jooq dialect), the DatasourceConfig class and the ApiRequest class must be made._ 
 
 ### Technologies
 ***
