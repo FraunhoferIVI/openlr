@@ -256,6 +256,7 @@
             <!-- any other plugins -->
 
             <plugin>
+                <!-- Building jar with External Libraries -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>

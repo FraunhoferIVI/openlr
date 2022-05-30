@@ -112,7 +112,7 @@ cd Here2OSM
 mvn clean install
 ```
 ```bash
-java -jar target\here2osm-1.0-SNAPSHOT.jar
+java -jar target\here2osm.jar
 ```
 * supply the bounding box of your map as follows: *([Southwest longitude],[Southwest latitude],[Northeast longitude],[Northeast latitude])* e.g.: 9.850,53.500,10.130,53.600 for hamburg
   * in script (Here2Osm.java) line 21
