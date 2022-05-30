@@ -8,9 +8,7 @@ import com.here.account.oauth2.HereAccessTokenProvider;
 import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
-import org.jooq.sources.tables.IncidentsV7;
-import org.jooq.sources.tables.Kanten;
-import org.jooq.sources.tables.KantenIncidentsV7;
+import org.jooq.sources.tables.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,9 +30,9 @@ import static org.jooq.sources.tables.Kanten.KANTEN;
 
 public class HereTrafficV7
 {
+    // token needed for requesting the data
     private String token;
-    private String bbox;
-    // the bounding box divided in smaller pieces, when to big
+    // bounding box (divided in smaller pieces, if to big for a single request)
     private List<String> boundingBoxes = new ArrayList<>();
     // flow data
     private Timestamp flowUpdated;
@@ -58,7 +56,7 @@ public class HereTrafficV7
     }
 
     /**
-     * Enter the wanted bounding box
+     * Enter the desired Bounding Box.
      */
     public void insertBbox()
     {
@@ -80,7 +78,6 @@ public class HereTrafficV7
      */
     public void setBbox(String bbox)
     {
-        this.bbox = bbox;
         // get coordinates as double values
         Pattern pattern = Pattern.compile("[,]");
         double[] coordinates = pattern.splitAsStream(bbox)
@@ -110,6 +107,7 @@ public class HereTrafficV7
             // check, that coordinates are in the right order
             if (i > 1 && coordinate <= coordinates[i - 2])
                     throw new InvalidWGS84CoordinateException();
+            // ... and the numeric boundaries
             if (i == 0 || i == 2) {
                 boolean validLat = (-180 <= coordinate) && (coordinate <= 180);
                 if (!validLat)
@@ -124,11 +122,11 @@ public class HereTrafficV7
     }
 
     /**
-     * The Bounding box-Rectangle get's recursively split into four smaller ones of the same size
-     * (top left, top right, bottom left, bottom right), as long as it's bigger than the given size.
+     * As long as it's bigger than the given size, the Bounding Box-Rectangle get's recursively split
+     * into four smaller ones of the same size (top left, top right, bottom left, bottom right)
      *
      * @param bbox bounding box
-     * @param size maximum size of the Bounding box, for which a request at the API is possible
+     * @param size maximum size of the Bounding box, for which a request at the HERE-API is possible
      */
     private void quadTreeDissect(double[] bbox, int size)
     {
@@ -137,6 +135,7 @@ public class HereTrafficV7
 
         if ((width > size) || (height > size))
         {
+            // set variables
             double leftLong = bbox[0];
             double bottomLat = bbox[1];
             double rightLong = bbox[2];
@@ -144,11 +143,13 @@ public class HereTrafficV7
             double halfHeight = height / 2;
             double halfWidth = width / 2;
 
+            // calculate new, smaller Bounding Boxes
             double[] topLeft = {topLat, leftLong, (topLat - (halfHeight)), (leftLong + (halfWidth))};
             double[] topRight = {topLat, (leftLong + (halfWidth)), (topLat - (halfHeight)), rightLong};
             double[] bottomLeft = {(topLat - (halfHeight)), leftLong, bottomLat, (leftLong + (halfWidth))};
             double[] bottomRight = {(topLat - (halfHeight)), (leftLong + (halfWidth)), bottomLat, rightLong};
 
+            // and check their size
             quadTreeDissect(topLeft, size);
             quadTreeDissect(topRight, size);
             quadTreeDissect(bottomLeft, size);
@@ -156,6 +157,7 @@ public class HereTrafficV7
         }
         else
             {
+                // add to bbox-list (in the format required for the Api-request)
                 String box = String.format("%3.3f;%3.3f;%3.3f;%3.3f",
                         bbox[0], bbox[1], bbox[2], bbox[3])
                         .replace(',', '.')
@@ -166,16 +168,18 @@ public class HereTrafficV7
     }
 
     /**
-     * get the Token needed for the Api request
+     * Get the Token needed for the Api request
      */
     public void getToken()
     {
+        // get info for token request
         ClassLoader classLoader = getClass().getClassLoader();
         String fileName = "hereCredentials_new.properties";
         URL url = classLoader.getResource(fileName);
         File credentialsFile = new File(url.getPath());
-
         FromDefaultHereCredentialsPropertiesFile fromDefaultHereCredentialsPropertiesFile = new FromDefaultHereCredentialsPropertiesFile(credentialsFile);
+
+        // token request
         token = HereAccessTokenProvider.builder().setClientAuthorizationRequestProvider(fromDefaultHereCredentialsPropertiesFile).build().getAccessToken();
 
         logger.info("token: " + token);
@@ -190,9 +194,11 @@ public class HereTrafficV7
      */
     private String getApiURL(String bbox, String resource)
     {
+        // invariable parts
         String front = "https://data.traffic.hereapi.com/v7/";
         String area = "?locationReferencing=olr&in=bbox:";
 
+        // piecing together
         String url = front + resource + area + bbox;
 
         logger.info("request-URL: {}", url);
@@ -208,19 +214,23 @@ public class HereTrafficV7
      */
     private String request(String bbox, String resource) throws IOException
     {
+        // setup
         HttpClient httpClient = HttpClient.newBuilder().build();
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .method("GET", HttpRequest.BodyPublishers.noBody())
                 .uri(URI.create(getApiURL(bbox, resource)))
+                // add token and no Cache-Control headers
                 .header("Authorization", "Bearer " + token)
                 .header("Cache-Control", "no-cache")
                 .build();
 
         try {
+            // request
             HttpResponse<InputStream> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofInputStream());
 
             if (httpResponse.statusCode() == 200)
             {
+                // cast response to String
                 BufferedReader reader = new BufferedReader(new InputStreamReader(httpResponse.body()));
                 StringBuilder response = new StringBuilder();
                 String line;
@@ -236,7 +246,7 @@ public class HereTrafficV7
     }
 
     /**
-     * Update the traffic information
+     * Update either incident or flow information.
      *
      * @param resource "incidents"/"flow"
      */
@@ -244,6 +254,7 @@ public class HereTrafficV7
     {
         getToken();
         String json = null;
+        // has to be done separately for each Bounding Box
         for (String bbox : boundingBoxes)
         {
             try {
@@ -256,20 +267,24 @@ public class HereTrafficV7
                 FlowJsonParser parser = new FlowJsonParser();
 
                 parser.parse(json);
+                // get update-time, flow info and affected lines
                 flowUpdated = parser.getUpdated();
                 flowItems.addAll(parser.getFlowItems());
                 flowAffectedLines.addAll(parser.getAffectedLines());
 
+                // update Database Tables
                 updateFlowTables();
             }
             else if (resource.equals("incidents")) {
                 IncidentsJsonParser parser = new IncidentsJsonParser();
 
                 parser.parse(json);
+                // get update-time, incident info and affected lines
                 incidentsUpdated = parser.getUpdated();
                 incidentItems.addAll(parser.getIncidentItems());
                 incidentAffectedLines.addAll(parser.getAffectedLines());
 
+                // update Database Tables
                 updateIncidentTables();
             }
         }
@@ -305,10 +320,6 @@ public class HereTrafficV7
         // Checks if "temp_incidents_v7" table already exists
         String tempIncidentsV7TableExists = String.valueOf(ctx.select(table("openlr", "temp_incidents_v7"))
                 .fetchOne().value1());
-
-        // Timestamp is only created when table "incidents_v7" exists
-        Timestamp youngestEntry = incidentsV7TableExists.equals("null") ? null :
-                (Timestamp) ctx.select(min(field("last_updated"))).from(DSL.table(incidents_v7)).fetchOne().value1();
 
         // Begin First Transaction - Fills temporary tables
         ctx.transaction(configuration1 -> {
@@ -347,7 +358,7 @@ public class HereTrafficV7
                     .column("negoff", SQLDataType.INTEGER.defaultValue(0))
                     .execute();
 
-            // Fill temp incidents_v7 table
+            // Fill temp_incidents_v7 table
             for (IncidentItemV7 incident : this.incidentItems) {
 
                 try(DSLContext dslContext = DSL.using(configuration1))
@@ -373,7 +384,7 @@ public class HereTrafficV7
 
             }
 
-            // Fill temp foreign key table
+            // Fill temporary foreign key table
             for (AffectedLine affectedLine : this.incidentAffectedLines) {
                 DSL.using(configuration1)
                         .insertInto(DSL.table(temp_kanten_incidents_v7),
@@ -391,7 +402,7 @@ public class HereTrafficV7
         // Begin Second Transaction
         ctx.transaction(configuration2 -> {
 
-            // Drop tables with old data if exists
+            // Drop tables with old data if they exist
             if (incidentsV7TableExists.equals("openlr.incidents_v7"))
             {
                 ctx.dropTable(DSL.table(kanten_incidents_v7)).cascade().execute();
@@ -411,7 +422,7 @@ public class HereTrafficV7
 
         }); // End second transaction
 
-        // Checks if incident_affected_v7 table already exists
+        // Delete old incident affected table, if it exists
         String affectedExists = String.valueOf(ctx.select(table("openlr", "incident_affected_v7"))
                 .fetchOne().value1());
 
@@ -419,7 +430,7 @@ public class HereTrafficV7
             ctx.dropTable(DSL.table(incident_affected_v7)).cascade().execute();
         }
 
-        // Create QGIS view containing flow_affected_v7 lines
+        // Create incident_affected_v7 table for display in QGIS
         ctx.transaction(configuration3 -> {
             DSL.using(configuration3).createTable(incident_affected_v7).as(
                     select(KANTEN.LINE_ID, KANTEN.NAME, IncidentsV7.INCIDENTS_V7.INCIDENT_ID, IncidentsV7.INCIDENTS_V7.ORIGINAL_ID,
@@ -442,6 +453,7 @@ public class HereTrafficV7
         Name flow_v7 = DSL.name("openlr", "flow_v7");
         Name kanten_flow_v7 = DSL.name("openlr", "kanten_flow_v7");
         Name flow_affected_v7 = DSL.name("openlr", "flow_affected_v7");
+        Name kanten = DSL.name("openlr","kanten");
 
         // Checks if "flow_v7" table already exists
         String flowTableExists = String.valueOf(ctx.select(table("openlr", "flow_v7"))
@@ -450,10 +462,6 @@ public class HereTrafficV7
         // Checks if "temp_flow_v7" table already exists
         String tempflowTableExists = String.valueOf(ctx.select(table("openlr", "temp_flow_v7"))
                 .fetchOne().value1());
-
-        // Timestamp is only created when table "flow_v7" exists
-        Timestamp youngestEntry = flowTableExists.equals("null") ? null :
-                (Timestamp) ctx.select(min(field("last_updated"))).from(DSL.table(flow_v7)).fetchOne().value1();
 
         // Begin First Transaction - Fills temporary tables
         ctx.transaction(configuration1 -> {
@@ -487,7 +495,7 @@ public class HereTrafficV7
             // Create temporary foreign key table
             DSL.using(configuration1)
                     .createTable(temp_kanten_flow_v7)
-                    .column("olr", SQLDataType.CHAR(64).nullable(false))
+                    .column("olr", SQLDataType.CHAR(255).nullable(false))
                     .column("line_id", SQLDataType.INTEGER.nullable(false))
                     .column("posoff", SQLDataType.INTEGER.defaultValue(0))
                     .column("negoff", SQLDataType.INTEGER.defaultValue(0))
@@ -547,7 +555,6 @@ public class HereTrafficV7
                                     flowItem.getPosoff() == null ? 0 : flowItem.getPosoff(),
                                     flowItem.getNegoff() == null ? 0 : flowItem.getNegoff())
                             // ignore duplicate OLR keys
-                            // .onDuplicateKeyIgnore()
                             .onConflictDoNothing()
                             .execute();
                 } catch (Exception e) {
@@ -568,8 +575,6 @@ public class HereTrafficV7
                         .execute();
             }
 
-
-
             logger.info("Created temporary tables.");
 
         }); // End first transaction
@@ -577,7 +582,7 @@ public class HereTrafficV7
         // Begin Second Transaction
         ctx.transaction(configuration2 -> {
 
-            // Drop table with old data if exists
+            // Drop tables with old data if exists
             if (flowTableExists.equals("openlr.flow_v7"))
             {
                 ctx.dropTable(DSL.table(kanten_flow_v7)).cascade().execute();
@@ -596,7 +601,7 @@ public class HereTrafficV7
 
         }); // End second transaction
 
-        // Checks if flow_affected_v7 table already exists
+        // Delete old incident affected table, if it exists
         String affectedExists = String.valueOf(ctx.select(table("openlr", "flow_affected_v7"))
                 .fetchOne().value1());
 
@@ -604,26 +609,20 @@ public class HereTrafficV7
             ctx.dropTable(DSL.table(flow_affected_v7)).cascade().execute();
         }
 
-        // Create QGIS view containing flow_affected_v7 lines
-        ctx.execute("CREATE TABLE openlr.flow_affected_v7 AS select k.line_id, k.name, f.olr, f.speed, f.speed_uncapped, f.free_flow_speed, f.jam_factor, f.confidence, f.traversability, f.junction_traversability, \n" +
-                "k.geom from openlr.kanten_flow_v7 kf \n" +
-                "join openlr.flow_v7 f on (kf.olr = f.olr) \n" +
-                "join openlr.kanten k on (kf.line_id = k.line_id);");
-/*
+        // Create flow_affected_v7 table for display in QGIS
         ctx.transaction(configuration3 -> {
             DSL.using(configuration3).createTable(flow_affected_v7).as(
-                    select(KANTEN.LINE_ID, KANTEN.NAME, Fl, IncidentsV7.INCIDENTS_V7.ORIGINAL_ID,
-                            IncidentsV7.INCIDENTS_V7.START_TIME, IncidentsV7.INCIDENTS_V7.END_TIME,
-                            IncidentsV7.INCIDENTS_V7.ROAD_CLOSED, IncidentsV7.INCIDENTS_V7.DESCRIPTION,
-                            IncidentsV7.INCIDENTS_V7.SUMMARY, IncidentsV7.INCIDENTS_V7.JUNCTION_TRAVERSABILITY,
-                            KANTEN.GEOM).from(DSL.table(kanten_incidents_v7))
-                            .join(incidents_v7).on(KantenIncidentsV7.KANTEN_INCIDENTS_V7.INCIDENT_ID.eq(IncidentsV7.INCIDENTS_V7.INCIDENT_ID))
-                            .join(kanten).on(KantenIncidentsV7.KANTEN_INCIDENTS_V7.LINE_ID.eq(Kanten.KANTEN.LINE_ID))
+                    select(KANTEN.LINE_ID, KANTEN.NAME, FlowV7.FLOW_V7.OLR, FlowV7.FLOW_V7.SPEED,
+                            FlowV7.FLOW_V7.SPEED_UNCAPPED, FlowV7.FLOW_V7.FREE_FLOW_SPEED,
+                            FlowV7.FLOW_V7.JAM_FACTOR, FlowV7.FLOW_V7.CONFIDENCE,
+                            FlowV7.FLOW_V7.TRAVERSABILITY, FlowV7.FLOW_V7.JUNCTION_TRAVERSABILITY,
+                            KANTEN.GEOM).from(DSL.table(kanten_flow_v7))
+                            .join(flow_v7).on(KantenFlowV7.KANTEN_FLOW_V7.OLR.eq(FlowV7.FLOW_V7.OLR))
+                            .join(kanten).on(KantenFlowV7.KANTEN_FLOW_V7.LINE_ID.eq(Kanten.KANTEN.LINE_ID))
             ).execute();
         });
 
- */
-        logger.info("Updated incident data.");
+        logger.info("Updated flow data.");
     }
 }
 
