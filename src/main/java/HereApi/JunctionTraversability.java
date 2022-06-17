@@ -7,12 +7,13 @@ import org.slf4j.LoggerFactory;
 /**
  * denotes, which junctions along a road are open
  * can be:
- * ALL_OPEN
- * ALL_CLOSED
- * INTERMEDIATE_CLOSED_EDGE_OPEN
- * START_OPEN_OTHERS_CLOSED
- * END_OPEN_OTHERS_CLOSED
+ * ALL_OPEN - all junctions along the roadway are open
+ * ALL_CLOSED - all junctions are closed
+ * INTERMEDIATE_CLOSED_EDGE_OPEN - junctions at beginning and end of the roadway are open, intermediate junctions are closed
+ * START_OPEN_OTHERS_CLOSED - first edge junction is open, all others are closed
+ * END_OPEN_OTHERS_CLOSED - last edge junction is open, all others are closed
  */
+@Nullable
 public enum JunctionTraversability
 
 {
@@ -34,6 +35,7 @@ public enum JunctionTraversability
         }
     }
 
+    @Nullable
     public static JunctionTraversability get(@NotNull String juncTrav)
     {
         switch (juncTrav)
