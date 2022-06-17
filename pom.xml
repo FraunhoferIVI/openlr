@@ -233,8 +233,8 @@
                     <!-- JDBC connection parameters -->
                     <jdbc>
                         <driver>org.postgresql.Driver</driver>
-                        <url>jdbc:postgresql://localhost/postgres</url>
-                        <user>postgres</user>
+                        <url>jdbc:postgresql://localhost/dbname</url>
+                        <user>username</user>
                         <password>password</password>
                     </jdbc>
                     <!-- Generator parameters -->
