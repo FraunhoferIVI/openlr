@@ -18,8 +18,8 @@ public class Here2Osm {
         long start = System.currentTimeMillis();
 
         HereTrafficV7 request = new HereTrafficV7();
-        // Use request.insertBbox() to set the bounding box in Terminal.
-        request.setBbox("10.000,53.500,10.050,53.550");
+        request.insertBbox();
+        // Use request.setBbox("<bbox>") instead to set the bounding box in Code.
         request.update("incidents");
         request.update("flow");
 
