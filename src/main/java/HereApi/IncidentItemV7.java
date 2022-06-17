@@ -5,6 +5,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.sql.Timestamp;
 
+/**
+ * container for information of a single Item from HERE's traffic incident API version 7
+ */
 public class IncidentItemV7 {
 
     @NotNull
@@ -30,6 +33,19 @@ public class IncidentItemV7 {
     @Nullable
     private Integer negoff;
 
+    /**
+     * @param id identifier for the latest update (can change over time)
+     * @param originalId identifier of the first occurrence for this incident
+     * @param olr Open Location Reference
+     * @param startTime the time from which this incident has to be considered
+     * @param endTime the time until which this incident has to be considered
+     * @param roadClosed weather the incident prevents travel along the roadway
+     * @param description a longer textual description of the incident, often with location information
+     * @param summary a short textual description of the incident without location information
+     * @param junctionTraversability Used for road closures to indicate if the junctions along the closure can be crossed.
+     * @param posoff needed for visualization in QGIS
+     * @param negoff needed for visualization in QGIS
+     */
     public IncidentItemV7(@NotNull String id, @NotNull String originalId, @NotNull String olr,
                           @Nullable Timestamp startTime, @Nullable Timestamp endTime,
                           @Nullable Boolean roadClosed, @Nullable String description,
@@ -67,13 +83,13 @@ public class IncidentItemV7 {
     }
 
     /**
-     * identifier for this incident message (can change over time)
+     * identifier for the latest update (can change over time)
      */
     @NotNull
     public String getId() { return id; }
 
     /**
-     * identifier of the first message for this incident
+     * identifier of the first occurrence of this incident
      */
     @NotNull
     public String getOriginalId() { return originalId; }
