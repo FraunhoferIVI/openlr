@@ -18,7 +18,7 @@ Reference implementation in Java. Uses the [TomTom OpenLR standard](https://www.
 
 Project status: reference implementation
 ***
-![qgisView](src/main/resources/Screenshots/HamburgQGIS.png)
+![qgisView](src/main/resources/Screenshots/HamburgQGIS.PNG)
 QGIS view
 
 ### Setup
