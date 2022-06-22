@@ -17,6 +17,9 @@ If you want to view the master's thesis, you can ask the IVI for access.
 Reference implementation in Java. Uses the [TomTom OpenLR standard](https://www.openlr-association.com/method.html) and the [TPEG2-OLR ISO/TS 21219-22 standard](https://www.iso.org/standard/63122.html) to map traffic information on a road network based on [OpenStreetMap](https://www.openstreetmap.org/#map=6/51.330/10.453) data. 
 
 Project status: reference implementation
+***
+![qgisView](src/main/resources/Screenshots/HamburgQGIS.png)
+QGIS view
 
 ### Setup
 ***
