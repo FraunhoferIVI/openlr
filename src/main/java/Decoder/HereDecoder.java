@@ -161,7 +161,7 @@ public class HereDecoder {
         try {
             osmMapLoader = new RoutableOSMMapLoader();
             osmMapLoader.close();
-        } catch (Exception e) { logger.error(e.getMessage()); }
+        } catch (Exception e) { logger.error("Error while initializing map loader: {}", e.getMessage()); }
 
         // Initialize database
         MapDatabase mapDatabase = new MapDatabaseImpl(osmMapLoader);
