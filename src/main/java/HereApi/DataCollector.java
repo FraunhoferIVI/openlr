@@ -98,7 +98,7 @@ public class DataCollector {
             // Create incident and add to list
             incident2list(incidentId, type, status, start, end, criticality, openLRCode, shortDesc, longDesc, roadClosure, posOff, negOff);
         }
-        logger.info("Collected data.");
+        logger.info("Collected incident data.");
     }
 
     /**
@@ -109,7 +109,7 @@ public class DataCollector {
     public void collectFlowInformation(@NotNull List<FlowItem> flowItemList) {
         this.flowItems = flowItemList;
 
-        logger.info("Collected flow information.");
+        logger.info("Collected flow data.");
     }
 
     /**
