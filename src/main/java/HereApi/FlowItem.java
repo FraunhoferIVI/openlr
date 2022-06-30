@@ -1,5 +1,8 @@
 package HereApi;
 
+/**
+ * container for information of a single Item from HERE's traffic flow API version 6 (xml).
+ */
 public class FlowItem {
 
     private String id;
