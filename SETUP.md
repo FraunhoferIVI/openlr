@@ -78,7 +78,7 @@ Now your database should look like this:
     * If you want to use **all of the OSM** data use [This](src/main/resources/SQL/SQL_Script.sql)
     * If you want to **clip the data to an area** use [That](src/main/resources/SQL/SQL_Script.sql)
         * The clipping area has to be in YourDB\schemas\public\tables and named **bbox**.
-* **Before running** set the informations **map_name** and **map_owner** in the fourth last statement:
+    * **Before running** set the informations **map_name** and **map_owner** in the fourth last statement:
 ```sql
 INSERT INTO openlr.metadata(map_name, map_owner) VALUES
 ('Hamburg', 'OSM');
