@@ -12,6 +12,9 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Reads out information from the HERE traffic flow API version 7, creates FlowItemV7's from it and decodes their olr-codes.
+ */
 public class FlowJsonParser {
 
     private Timestamp updated;
