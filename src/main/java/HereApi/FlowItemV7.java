@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * container for information of a single Item from HERE's traffic flow API version 7
+ * container for information of a single Item from HERE's traffic flow API version 7 (json).
  */
 public class FlowItemV7 {
 
@@ -115,7 +115,10 @@ public class FlowItemV7 {
 
     @Nullable
     public String getName() { return name; }
-
+    
+    /**
+     * @return Open Location Reference of this Item
+     */
     @NotNull
     public String getOlr() { return olr; }
 
