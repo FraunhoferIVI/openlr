@@ -109,7 +109,7 @@ public class DataCollector {
     public void collectFlowInformation(@NotNull List<FlowItem> flowItemList) {
         this.flowItems = flowItemList;
 
-        logger.info("Collected data.");
+        logger.info("Collected flow information.");
     }
 
     /**
