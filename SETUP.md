@@ -7,11 +7,11 @@ Examples are for Windows(x64).
 1. [IDE](#IDE)
 2. [QGIS](#QGIS)
 3. [PostgreSQL](#PostgreSQL)
-4. [Database client](#Database client)
+4. [Database client](#DBclient)
 5. [HERE-Api-Key](#HERE-Api-Key)
 6. [osm2pgsql](#osm2pgsql)
-7. [OSM data](#<OSM data>)
-8. [Database setup](#Database setup)
+7. [OSM data](#<OSMdata>)
+8. [Database setup](#DBsetup)
 9. [Maven](#Maven)
 10. [Build](#Build)
 
@@ -30,7 +30,7 @@ This code works best with [IntelliJ](https://www.jetbrains.com/de-de/idea/downlo
   * Click the first Link in the Windows column
   * In the Application Stack Builder during installation of PostgreSQL, choose your PostgreSQL > install the latest PostGIS Bundle (under *Spatial Extensions*)
 
-### Database client
+### DBclient
 Download and install [DBeaver](https://dbeaver.io/download/)
 * Take the 64 bit installer under *Windows*
 
@@ -47,11 +47,11 @@ Download and install [DBeaver](https://dbeaver.io/download/)
     * click *new* in the top right and paste the Path you copied earlier
     * click *ok* on all opened Windows
 
-### [OSM data](https://download.geofabrik.de/)
+### [OSMdata](https://download.geofabrik.de/)
 * Download an osm *.pbf file of your choice
 * It is highly recommended to just get a city-file for beginners, e.g. [hamburg-latest](https://download.geofabrik.de/europe/germany/hamburg-latest.osm.pbf)
 
-### Database setup
+### DBsetup
 * Create the data base
     * Start DBeaver 
     * click *New Connection* (top left) and choose *PostgreSQL*, than *Next*
