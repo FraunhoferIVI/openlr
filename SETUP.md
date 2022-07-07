@@ -70,7 +70,9 @@ Download and install [DBeaver](https://dbeaver.io/download/)
     ```bash
     osm2pgsql -c -d postgres -U postgres -H localhost -W --hstore -S <Path to>\osm2pgsql-bin\default.style <Path to>\<filename>.osm.pbf
     ```
-Now your database should look like this:
+    * remember to use quotation marks around paths with Spaces.
+
+Now you should have these public tables:
 
 ![LoadedOSMData](src/main/resources/Screenshots/osm2pgsql.png)
 
@@ -102,11 +104,10 @@ After running your database should look as follows:
     ```bash
     git clone <HTTP-Adress>
     ```
- * Set your **dbname**, **user** and **password** at src\main\java\DataBase\DatasourceConfig.java (line 23+2) and pom.xml (line 195+2)
- * Set your HERE Api key at src\main\java\HereApi\ApiRequest.java (line 37)
- * go back to the Command Prompt and execute
+* Set your **dbname**, **user** and **password** at src\main\java\DataBase\DatasourceConfig.java (line 23+2) and pom.xml (line 236+2)
+* go back to the Command Prompt and execute
 ```bash
-cd Here2OSM
+cd openlr
 ```
 ```bash
 mvn clean install
@@ -114,11 +115,5 @@ mvn clean install
 ```bash
 java -jar target\here2osm.jar
 ```
-* supply the bounding box of your map as follows: *([Southwest longitude],[Southwest latitude],[Northeast longitude],[Northeast latitude])* e.g.: 9.850,53.500,10.130,53.600 for hamburg
-  * in script (Here2Osm.java) line 21
-  * in the command Prompt by replacing line 21 with 
-  ```bash
-  request.insertBbox();
-  ```
-* run *Here2Osm.java*
+* supply the bounding box of your chosen region in the format: SW Long,SW Lat,NE Long,NE Lat (counterclockwise) hamburg for example has 9.850,53.500,10.130,53.600
   
