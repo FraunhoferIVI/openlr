@@ -117,7 +117,7 @@ public class FlowItemV7 {
     public String getName() { return name; }
     
     /**
-     * @return Open Location Reference of this Item
+     * Open Location Reference of this Item
      */
     @NotNull
     public String getOlr() { return olr; }
