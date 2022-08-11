@@ -124,11 +124,15 @@ public class FlowJsonParser {
                 location = decoderHere.decodeHere(olr);
                 Integer posOff = null;
                 Integer negOff = null;
-                if (location != null) {
+                if (location != null && location.isValid()) {
                     posOff = location.getPositiveOffset();
                     negOff = location.getNegativeOffset();
 
                     getAffectedLines(location, olr, posOff, negOff);
+                }
+                else
+                {
+                    logger.warn("Could not decode olr code: {}", olr);
                 }
 
                 FlowItemV7 item = new FlowItemV7(name, olr, speed, speedUncapped, freeFlow, jamFactor,
