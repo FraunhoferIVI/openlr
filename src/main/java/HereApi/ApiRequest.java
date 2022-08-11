@@ -8,6 +8,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -34,18 +36,17 @@ import static org.jooq.sources.tables.Kanten.KANTEN;
 public class ApiRequest {
 
     //your API key
-    private String hereApikey = "yourApi";
+    private final String hereApikey = "agUEc-kNFCe2XlvDfmo4y8V3gLJrkuq3_P1XNnFI-0A";
     private String answer;
+    private List<BoundingBox> bboxes = new ArrayList<>();
 
     // Contains incident information for all requested bounding boxes
-    private List<Incident> incidentList;
+    private List<Incident> incidentList = new ArrayList<>();
     // Contains affected lines for all requested bounding boxes
-    private List<AffectedLine> affectedLinesList;
+    private List<AffectedLine> affectedLinesList = new ArrayList<>();
+    private List<FlowItem> flowItems = new ArrayList<>();
 
-    public ApiRequest() {
-        this.incidentList = new ArrayList<>();
-        this.affectedLinesList = new ArrayList<>();
-    }
+    private static final Logger logger = LoggerFactory.getLogger(ApiRequest.class);
 
     // needed for SQL queries
     static DSLContext ctx;
@@ -53,18 +54,18 @@ public class ApiRequest {
         try {
             ctx = DSL.using(DatasourceConfig.getConnection(), SQLDialect.POSTGRES);
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
     /**
      * Query to check whether table exists in the database. Returns null if not available, otherwise schema.name.
      *
-     * @param schema Name of the schema where table should be available.
+     * @param schema Name of the schema, in which the Table should be.
      * @param table  Name of the table to be checked.
      * @return Field to use in select query.
      */
-    public static Field<?> to_regclass(String schema, String table) {
+    private static Field<?> to_regclass(String schema, String table) {
 
         String query = "to_regclass('" + schema + "." + table + "')";
         return DSL.field(query);
@@ -72,47 +73,54 @@ public class ApiRequest {
 
     /**
      * Sets URL with given bbox.
+     *
+     * @param resource "incidents"/"flow"
+     *
      * @throws MalformedURLException URL is in the wrong format or an unknown transmission protocol is specified.
      */
-    private URL setUrl(String bbox) throws MalformedURLException {
+    private URL generateURL(String bbox, String resource) throws MalformedURLException {
         String baseUrl = "https://traffic.ls.hereapi.com";
-        String incidents = "/traffic/6.3/";
-        String flow = "/traffic/6.2/";
-        String resource = "incidents";
+        String version = "/traffic/6.3/";
         String format = ".xml";
         String apiKey = "?apiKey=" + hereApikey;
-        //String criticality = "&criticality=minor";
-        return new URL(baseUrl + incidents + resource + format + apiKey + bbox);
+        URL url = new URL(baseUrl + version + resource + format + apiKey + bbox);
+
+        logger.info("URL set to: {}", url);
+
+        return url;
     }
 
     /**
      * Sends request to HERE API.
      * API returns xml, xml is converted to String.
+     *
      * @param bboxString Coordinates for bbox given as String to use in Api Request URL.
+     * @param resource "incidents"/"flow"
+     *
      * @return HERE Api answer as String
+     *
      * @throws IOException Signals a general input / output error
      */
-    private String sendRequest(String bboxString) throws IOException {
+    private String sendRequest(String bboxString, String resource) throws IOException {
 
-        URL request = setUrl(bboxString);
-        System.out.println(request);
+        URL request = generateURL(bboxString, resource);
         HttpURLConnection con = (HttpURLConnection) request.openConnection();
+
         con.setRequestMethod("GET");
         con.setRequestProperty("Accept", "application/xml");
         int responseCode = con.getResponseCode();
+
         if (responseCode == HttpURLConnection.HTTP_OK) {
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(con.getInputStream()));
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
             StringBuilder response = new StringBuilder();
             String readLine;
-            while ((readLine = in .readLine()) != null) {
+            while ((readLine = in.readLine()) != null) {
                 response.append(readLine);
-            } in .close();
+            } in.close();
             answer = response.toString();
 
-        } else {
-            System.out.println("GET Request failed.");
-        }
+        } else { logger.error("GET Request failed"); }
+
         return answer;
     }
 
@@ -124,7 +132,12 @@ public class ApiRequest {
     @NotNull
     @Contract(" -> new")
     private Timestamp getTimeStamp() {
-        return new Timestamp(System.currentTimeMillis());
+
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+
+        logger.info("Timestamp: {}", now);
+
+        return now;
     }
 
     /**
@@ -162,11 +175,10 @@ public class ApiRequest {
 
         System.out.println("Enter the coordinates for the bounding box as follows (format WGS84):" +
                 "\nUpper Left Lat,Upper Left Lon;Bottom Right Lat,Bottom Right Lon" +
-                "\nExample: 51.057,13.744;51.053,13.751 ");
+                "\nExample: 53.60,9.85;53.50,10.13 (Hamburg)");
         String bboxString = scanner.next();
 
-        //BBox to request incidents for Dresden
-        //String bboxString = "51.1809,13.5766;50.9766,13.9812";
+        logger.info("Bounding Box set to {}", bboxString);
 
         //get coordinates as double values
         Pattern pattern = Pattern.compile("[,;]");
@@ -181,59 +193,101 @@ public class ApiRequest {
     }
 
     /**
-     * Checks the bounding box. For the Api Request, the request boundin box is limited to a
-     * maximum of 2 degrees (https://developer.here.com/documentation/traffic/dev_guide/topics/limitations.html).
-     * If the specified bounding box is too large, it is broken down into sufficiently small boxes.
-     * For each bounding box an API request is made, the XML file is parsed, the OpenLR code is decoded
-     * and the incident information and the affected lines are collected.
+     * Quad-Tree-dissection of the Bounding box, if bigger than size.
      *
      * @param bbox Bounding box
+     * @param size maximum piece-size
+     *
+     * @return List<bbox>
      */
-    private void getRecursiveBbox(@NotNull BoundingBox bbox) {
+    private void quadTreeDissect(BoundingBox bbox, int size)
+    {
+        if ((bbox.width > size) || (bbox.height > size)) {
 
-        // Recursive bounding box query
-        if ((bbox.width > 10) || (bbox.height > 10)) {
+            double topLat = bbox.getUpperLeftLat();
+            double leftLong = bbox.getUpperLeftLon();
+            double bottomLat = bbox.getBottomRightLat();
+            double rightLong = bbox.getBottomRightLon();
+            double halfHeight = bbox.getHeight() / 2;
+            double halfWidth = bbox.getWidth() / 2;
 
-            // Box upper left
-            getRecursiveBbox(new BoundingBox(bbox.getUpperLeftLat(), bbox.getUpperLeftLon(),
-                    (bbox.getUpperLeftLat() - (bbox.getHeight() / 2)), (bbox.getUpperLeftLon() + (bbox.getWidth() / 2))));
-            // Box upper right
-            getRecursiveBbox(new BoundingBox(bbox.getUpperLeftLat(), (bbox.getUpperLeftLon() + (bbox.getWidth() / 2)),
-                    (bbox.getUpperLeftLat() - (bbox.getHeight() / 2)), bbox.getBottomRightLon()));
-            // Box lower left
-            getRecursiveBbox(new BoundingBox((bbox.getUpperLeftLat() - (bbox.getHeight() / 2)),
-                    bbox.getUpperLeftLon(), bbox.getBottomRightLat(), (bbox.getUpperLeftLon() - (bbox.getWidth() / 2))));
-            // Box lower right
-            getRecursiveBbox(new BoundingBox((bbox.getUpperLeftLat() - (bbox.getHeight() / 2)),
-                    (bbox.getUpperLeftLon() + (bbox.getWidth() / 2)), bbox.getUpperLeftLat(), bbox.getBottomRightLon()));
-        } else {
+            // top left
+            quadTreeDissect(new BoundingBox(topLat, leftLong,
+                    (topLat - (halfHeight)), (leftLong + (halfWidth))), size);
+            // top right
+            quadTreeDissect(new BoundingBox(topLat, (leftLong + (halfWidth)),
+                    (topLat - (halfHeight)), rightLong), size);
+            // bottom left
+            quadTreeDissect(new BoundingBox((topLat - (halfHeight)),
+                    leftLong, bottomLat, (leftLong + (halfWidth))), size);
+            // bottom right
+            quadTreeDissect(new BoundingBox((topLat - (halfHeight)),
+                    (leftLong + (halfWidth)), bottomLat, rightLong), size);
+        }
+        else { bboxes.add(bbox); }
+    }
 
-            //Gets Here Api request answer
-            try {
-                sendRequest(bbox.getBboxRequestString());
-            } catch (IOException e) {
-                e.printStackTrace();
+    /**
+     * Sends a Api Request, parses the replied XML, decodes the OpenLR code (for incidents)
+     * and collects the relevant information as well as affected lines.
+     *
+     * @param bbox Bounding box
+     * @param resource "incidents"/"flow"
+     */
+    private void gatherTrafficInfo(@NotNull BoundingBox bbox, String resource) {
+
+        quadTreeDissect(bbox, 10);
+
+        for (BoundingBox bounding : bboxes)
+        {
+            if (resource.equals("incidents")) {
+                // Gets Here Api request answer
+                try {
+                    sendRequest(bounding.getBboxRequestString(), "incidents");
+                } catch (IOException e) {
+                    logger.error(e.getMessage());
+                }
+
+                // Parse answer or file
+                IncidentsXMLParser parser = new IncidentsXMLParser();
+                parser.parseXMLFromApi(answer);
+                // If you want to test out a file instead of the API
+                // parser.parseXMlFromFile("");
+
+                // Collect relevant data per incident and decoding location
+                DataCollector collector = new DataCollector();
+                try {
+                    collector.collectIncidentInformation(parser.getTrafficItems());
+                } catch (Exception e) {
+                    logger.error(e.getMessage());
+                }
+
+                // Collects incident data and affected lines for all requested bounding boxes
+                this.incidentList.addAll(collector.getIncidents());
+                this.affectedLinesList.addAll(collector.getAffectedLines());
+
+            } else if (resource.equals("flow")) {
+                // Gets Here Api request answer
+                try {
+                    sendRequest(bounding.getBboxRequestString(), "flow");
+                } catch (IOException e) {
+                    logger.error(e.getMessage());
+                }
+
+                // Parse answer or file
+                FlowXMLParser parser = new FlowXMLParser();
+                parser.parseXMLFromApi(answer);
+                // If you want to test out a file instead of the API
+                // parser.parseXMlFromFile("");
+
+                // Collect relevant flow data
+                DataCollector collector = new DataCollector();
+
+                collector.collectFlowInformation(parser.getFlowItems());
+
+                // Collects incident data and affected lines for all requested bounding boxes
+                flowItems.addAll(collector.getFlowItems());
             }
-
-            // Parse answer or file
-            XMLParser parser = new XMLParser();
-            parser.parseXMLFromApi(answer);
-            // If you wanne test out a file instead of the API
-            //parser.parseXMlFromFile("");
-
-
-            // Collect relevant data per incident and decoding location
-            DataCollector collector = new DataCollector();
-            try {
-                collector.collectInformation(parser.getListTrafficItems());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            // Collects incident data and affected lines for all requested bounding boxes
-            this.incidentList.addAll(collector.getListIncidents());
-            this.affectedLinesList.addAll(collector.getListAffectedLines());
-
         }
     }
 
@@ -249,18 +303,20 @@ public class ApiRequest {
      */
     public void updateIncidentData() throws InvalidBboxException, InvalidWGS84CoordinateException {
 
+        logger.info("INCIDENTS:");
+
         // Get current timestamp
         Timestamp currentTimestamp = getTimeStamp();
 
         // Get recursive bounding boxes if bbox is bigger than 2 degrees
-        getRecursiveBbox(setBoundingBox());
+        gatherTrafficInfo(setBoundingBox(), "incidents");
 
         // Needed to set schema for creating tables
         Name temp_incidents = DSL.name("openlr", "temp_incidents");
         Name temp_kanten_incidents = DSL.name("openlr", "temp_kanten_incidents");
         Name incidents = DSL.name("openlr", "incidents");
         Name kanten_incidents = DSL.name("openlr", "kanten_incidents");
-        Name affected = DSL.name("openlr", "affected");
+        Name incident_affected = DSL.name("openlr", "incident_affected");
 
         // Checks if "incidents" table already exists
         String incidentsTableExists = String.valueOf(ctx.select(to_regclass("openlr", "incidents"))
@@ -281,12 +337,15 @@ public class ApiRequest {
             if (tempIncidentsTableExists.equals("openlr.temp_incidents")) {
                 ctx.dropTable(table(temp_kanten_incidents)).cascade().execute();
                 ctx.dropTable(table(temp_incidents)).cascade().execute();
+
+                logger.info("Dropped old temporary tables.");
             }
 
             // If the most recent entry in the incident table is younger than the time stamp when the program
             // was started, this message is printed.
             if (youngestEntry != null && currentTimestamp.before(youngestEntry)) {
-                System.out.println("The incident data is up to date, the data has not been updated.");
+
+                logger.info("The incident data is up to date, the data has not been updated.");
 
             } else {
                 // Create temporary incident table
@@ -346,6 +405,7 @@ public class ApiRequest {
                             .execute();
                 }
             }
+            logger.info("Created temporary tables.");
 
         }); // End first transaction
 
@@ -363,6 +423,8 @@ public class ApiRequest {
 
                 ctx.dropTable(table(kanten_incidents)).cascade().execute();
                 ctx.dropTable(table(incidents)).cascade().execute();
+
+                logger.info("Dropped old tables.");
             }
 
             // Rename temp tables and add foreign keys
@@ -376,23 +438,128 @@ public class ApiRequest {
 
         }); // End second transaction
 
-        // Checks if affected table already exists
-        String affectedExists = String.valueOf(ctx.select(to_regclass("openlr", "affected"))
+        // Checks if incident_affected table already exists
+        String affectedExists = String.valueOf(ctx.select(to_regclass("openlr", "incident_affected"))
                 .fetchOne().value1());
 
-        if (affectedExists.equals("openlr.affected")) {
-            ctx.dropTable(table(affected)).cascade().execute();
+        if (affectedExists.equals("openlr.incident_affected")) {
+            ctx.dropTable(table(incident_affected)).cascade().execute();
         }
 
-        // Create QGIS view containing affected lines
-        ctx.execute("CREATE TABLE openlr.affected AS select k.line_id , k.name, i.incident_id , i.incident_type , i.criticality ," +
+        // Create QGIS view containing incident_affected lines
+        ctx.execute("CREATE TABLE openlr.incident_affected AS select k.line_id , k.name, i.incident_id , i.incident_type , i.criticality ," +
                 "i.roadclosure , i.start_date , i.end_date , i.shortdesc , i.longdesc ," +
                 "k.geom from openlr.kanten_incidents ki " +
                 "join openlr.incidents i on (ki.incident_id = i.incident_id)" +
                 "join openlr.kanten k on (ki.line_id = k.line_id);");
 
-
-        System.out.println("Program ended.");
+        logger.info("Updated incident data.");
     }
 
+    /**
+     * Method for updating the flow information contained in the database for a specified bounding box.
+     * If the database does not yet contain an flow table with the corresponding foreign key table, this is
+     * created and then filled. Generating temp tables containing the flow and foreign key data (first
+     * transaction). Deleting the tables containing the old date and altering the created temp tables
+     * (second transaction).
+     *
+     * @throws InvalidBboxException            Invalid bounding box
+     * @throws InvalidWGS84CoordinateException Coordinates out of WGS85 bounds
+     */
+    public void updateFlowData() throws InvalidBboxException, InvalidWGS84CoordinateException {
+
+        logger.info("FLOW:");
+
+        // Get current timestamp
+        Timestamp currentTimestamp = getTimeStamp();
+
+        // Get recursive bounding boxes if bbox is bigger than 2 degrees
+        gatherTrafficInfo(setBoundingBox(), "flow");
+
+        // Needed to set schema for creating tables
+        Name temp_flow = DSL.name("openlr", "temp_flow");
+        Name flow = DSL.name("openlr", "flow");
+
+        // Checks if "flow" table already exists
+        String flowTableExists = String.valueOf(ctx.select(to_regclass("openlr", "flow"))
+                .fetchOne().value1());
+
+        // Checks if "temp_flow" table already exists
+        String tempflowTableExists = String.valueOf(ctx.select(to_regclass("openlr", "temp_flow"))
+                .fetchOne().value1());
+
+        // Timestamp is only created when table "flow" exists
+        Timestamp youngestEntry = "null".equals(flowTableExists) ? null :
+                (Timestamp) ctx.select(min(field("generationdate"))).from(table(flow)).fetchOne().value1();
+
+        // Begin First Transaction - Fills temporary tables
+        ctx.transaction(configuration1 -> {
+
+            // Deleting temp_ table if it exists, prevents program from running into "already exists"-Error
+            if (tempflowTableExists.equals("openlr.temp_flow")) {
+                ctx.dropTable(table(temp_flow)).cascade().execute();
+
+                logger.info("Dropped old temporary table.");
+            }
+
+            // If the most recent entry in the flow table is younger than the time stamp when the program
+            // was started, this message is printed.
+            if (youngestEntry != null && currentTimestamp.before(youngestEntry)) {
+
+                logger.info("The flow data is up to date, the data has not been updated.");
+
+            } else {
+                // Create temporary flow table
+                DSL.using(configuration1).createTable(temp_flow)
+                        .column("id", SQLDataType.CHAR(50))
+                        .column("road_name", SQLDataType.CHAR(50))
+                        .column("accuracy", SQLDataType.DOUBLE)
+                        .column("free_flow_speed", SQLDataType.DOUBLE)
+                        .column("jam_factor", SQLDataType.DOUBLE)
+                        .column("speed_limited", SQLDataType.DOUBLE)
+                        .column("speed", SQLDataType.DOUBLE)
+                        .column("generationdate", SQLDataType.TIMESTAMP.defaultValue(field("now()", SQLDataType.TIMESTAMP)))
+                        .constraints(
+                                primaryKey("id"))
+                        .execute();
+
+                // Fill temp flow table
+                for (FlowItem flowItem : flowItems) {
+
+                    DSL.using(configuration1)
+                            .insertInto(table(temp_flow),
+                                    field(name("id")),
+                                    field(name("road_name")), field(name("accuracy")),
+                                    field(name("free_flow_speed")), field(name("jam_factor")),
+                                    field(name("speed_limited")), field(name("speed")))
+                            .values(flowItem.getId(),flowItem.getName(), flowItem.getAccuracy(), flowItem.getFreeFlowSpeed(),
+                                    flowItem.getJamFactor(), flowItem.getSpeedLimited(), flowItem.getSpeed())
+                            .execute();
+                }
+            }
+            logger.info("Created temporary table.");
+
+        }); // End first transaction
+
+        //If the most recent entry in the incident table is younger than the time stamp when the program was started,
+        // the data will not be updated.
+        if (youngestEntry != null && currentTimestamp.before(youngestEntry)) {
+            return;
+        }
+
+        // Begin Second Transaction
+        ctx.transaction(configuration2 -> {
+
+            // Drop table with old data if exists
+            if (flowTableExists.equals("openlr.flow"))
+            {
+                ctx.dropTable(table(flow)).cascade().execute();
+
+                logger.info("Dropped old table.");
+            }
+            // Rename temp table
+            ctx.alterTable(temp_flow).renameTo(flow).execute();
+
+        }); // End second transaction
+    }
 }

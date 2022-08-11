@@ -1,10 +1,11 @@
 package HereApi;
 
 import Decoder.HereDecoder;
-import Loader.RoutableOSMMapLoader;
 import openlr.location.Location;
 import openlr.map.Line;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -15,33 +16,28 @@ import java.util.List;
 
 public class DataCollector {
 
-    // Contains incident information
-    private List<Incident> listIncidents;
-    // Contains affected lines
-    private List<AffectedLine> listAffectedLines;
+    // List containing incident information
+    private List<Incident> incidents = new ArrayList<>();
+    // List containing affected line info (just for incidents right now)
+    private List<AffectedLine> affectedLines = new ArrayList<>();
+    // List containing traffic flow info
+    private List<FlowItem> flowItems = new ArrayList<>();
 
-    public DataCollector() {
+    private static final Logger logger = LoggerFactory.getLogger(DataCollector.class);
 
-        /* List to contain all incidents */
-        this.listIncidents = new ArrayList<>();
-        /* List to contains all from incidents affected lines */
-        this.listAffectedLines = new ArrayList<>();
-    }
+    public List<Incident> getIncidents() { return incidents; }
 
-    public List<Incident> getListIncidents() {
+    public List<AffectedLine> getAffectedLines() { return affectedLines; }
 
-        return listIncidents;
-    }
-
-    public List<AffectedLine> getListAffectedLines() {
-        return listAffectedLines;
-    }
+    public List<FlowItem> getFlowItems() { return flowItems; }
 
     /**
      * Converts String to Timestamp
      *
      * @param dateString Date as String, Format: MM/dd/yyyy hh:mm:ss
+     *
      * @return Timestamp
+     *
      * @throws ParseException Signals that an error has been reached unexpectedly while parsing.
      */
     private Timestamp convertString2Timestamp(String dateString) throws ParseException {
@@ -56,16 +52,13 @@ public class DataCollector {
      * Uses OpenLR decoder (TomTom, https://github.com/tomtom-international/openlr ) to determine affected lines.
      *
      * @param trafficItemList List containing extracted traffic items
+     *
      * @throws Exception Exception
      */
-    public void collectInformation(@NotNull List<TrafficItem> trafficItemList) throws Exception {
+    public void collectIncidentInformation(@NotNull List<TrafficItem> trafficItemList) throws Exception {
 
         // Initialize Decoder for HERE OpenLR Codes.
         HereDecoder decoderHere = new HereDecoder();
-        // Initialize OSM Database Loader
-        RoutableOSMMapLoader osmMapLoader = new RoutableOSMMapLoader();
-        //Close Database connection
-        osmMapLoader.close();
 
         for (TrafficItem trafficItemObject : trafficItemList) {
 
@@ -84,7 +77,7 @@ public class DataCollector {
             boolean roadClosure = Boolean.parseBoolean(trafficItemObject.getClosure());
 
             // Reads out TPEG-OLR Locations
-            Location location = decoderHere.decodeHere(openLRCode, osmMapLoader);
+            Location location = decoderHere.decodeHere(openLRCode);
 
             int posOff;
             int negOff;
@@ -105,6 +98,18 @@ public class DataCollector {
             // Create incident and add to list
             incident2list(incidentId, type, status, start, end, criticality, openLRCode, shortDesc, longDesc, roadClosure, posOff, negOff);
         }
+        logger.info("Collected incident data.");
+    }
+
+    /**
+     * Collects flow information for all flow items read from the XML.
+     *
+     * @param flowItemList List containing extracted flow items
+     */
+    public void collectFlowInformation(@NotNull List<FlowItem> flowItemList) {
+        this.flowItems = flowItemList;
+
+        logger.info("Collected flow data.");
     }
 
     /**
@@ -135,7 +140,7 @@ public class DataCollector {
                 if (i != 0 && (i != listLines.size() - 1)) {
                     affectedLine = new AffectedLine(listLines.get(i).getID(), incidentId);
                 }
-                this.listAffectedLines.add(affectedLine);
+                this.affectedLines.add(affectedLine);
             }
         }
     }
@@ -160,11 +165,13 @@ public class DataCollector {
      */
     private void incident2list(String incidentId, String type, String status, Timestamp start, Timestamp end,
                                String criticality, String openLRCode, String shortDesc, String longDesc,
-
                                boolean roadClosure, int posOff, int negOff) {
+
         Incident incident = new Incident(incidentId, type, status, start, end, criticality, openLRCode, shortDesc,
                 longDesc, roadClosure, posOff, negOff);
 
-        this.listIncidents.add(incident);
+        incidents.add(incident);
     }
+
+
 }

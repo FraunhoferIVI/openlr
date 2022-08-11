@@ -1,0 +1,186 @@
+{
+  "sourceUpdated": "2022-03-02T11:26:23Z",
+  "results": [
+    {
+      "location": {
+        "length": 87.0,
+        "olr": "CCgBEAAkIwcPAyYUTAAJBQQEAzUACgQDBFcAAH4AFgAJBQQEA7UAMAAA"
+      },
+      "incidentDetails": {
+        "id": "3712282026996998623",
+        "originalId": "4454517718886483395",
+        "startTime": "2022-02-15T18:16:18Z",
+        "endTime": "2022-03-03T06:16:18Z",
+        "entryTime": "2022-02-15T18:16:18Z",
+        "roadClosed": true,
+        "criticality": "critical",
+        "type": "roadClosure",
+        "codes": [
+          401
+        ],
+        "description": {
+          "value": "Geschlossen zwischen Boninstraße und Rothestraße - Gesperrt."
+        },
+        "summary": {
+          "value": "Geschlossen zwischen Boninstraße und Rothestraße - Gesperrt."
+        },
+        "junctionTraversability": "intermediateClosedEdgeOpen"
+      }
+    },
+    {
+      "location": {
+        "length": 32.0,
+        "olr": "CCgBEAAkIwcTOCYWEQAJBQQCAqoACgQDAiAA/9f/8QAJBQQCAioAMAAA"
+      },
+      "incidentDetails": {
+        "id": "1506619464631660436",
+        "originalId": "1506619464631660436",
+        "startTime": "2022-02-15T18:16:18Z",
+        "endTime": "2022-06-11T21:59:00Z",
+        "entryTime": "2022-02-15T18:16:18Z",
+        "roadClosed": false,
+        "criticality": "minor",
+        "type": "construction",
+        "codes": [
+          803,
+          500
+        ],
+        "description": {
+          "value": "Bei Eggerstedtstraße - Bauarbeiten auf Abschnitt. Fahrstreifen gesperrt."
+        },
+        "summary": {
+          "value": "Bei Eggerstedtstraße - Bauarbeiten auf Abschnitt. Fahrstreifen gesperrt."
+        }
+      }
+    },
+    {
+      "location": {
+        "length": 98.0,
+        "olr": "CCkBEAAlJAcsdSYVXAAJBQQCA04ACgUEAoEcAADC/7MACQUEAgPdADA6AA=="
+      },
+      "incidentDetails": {
+        "id": "260181394924979782",
+        "originalId": "260181394924979782",
+        "startTime": "2022-02-15T18:16:18Z",
+        "endTime": "2022-07-31T21:59:00Z",
+        "entryTime": "2022-02-15T18:16:18Z",
+        "roadClosed": false,
+        "criticality": "minor",
+        "type": "construction",
+        "codes": [
+          803
+        ],
+        "description": {
+          "value": "Bei Sandkamp - Bauarbeiten auf Abschnitt."
+        },
+        "summary": {
+          "value": "Bei Sandkamp - Bauarbeiten auf Abschnitt."
+        }
+      }
+    },
+    {
+      "location": {
+        "length": 1426.0,
+        "olr": "CCkBEAAlJAcDxiYWJgAJBQQEAzUACgUEBIsVAAYqAmwACQUEAwO6ADAAAA=="
+      },
+      "incidentDetails": {
+        "id": "4466830937263319023",
+        "originalId": "4466830937263319023",
+        "startTime": "2022-03-01T06:00:00Z",
+        "endTime": "2022-03-12T16:00:00Z",
+        "entryTime": "2022-03-01T06:29:10Z",
+        "roadClosed": true,
+        "criticality": "critical",
+        "type": "construction",
+        "codes": [
+          735
+        ],
+        "description": {
+          "value": "Wegen Baustelle gesperrt. Hamburg, Baron-Voght-Straße zwischen Heinrich-Plett-Straße und Beselerstraße gesperrt, Baustelle, bis 12.03.2022 17:00 Uhr ötl.Abl."
+        },
+        "summary": {
+          "value": "Wegen Baustelle gesperrt."
+        },
+        "junctionTraversability": "intermediateClosedEdgeOpen"
+      }
+    },
+    {
+      "location": {
+        "length": 186.0,
+        "olr": "CCoBEAAmJQcZuSYTKAAJBQQDAkQACgUEA4JOAAH2ACAACQUEAwK7ADCBFAA="
+      },
+      "incidentDetails": {
+        "id": "1355208637409020089",
+        "originalId": "1355208637409020089",
+        "startTime": "2022-03-02T08:00:00Z",
+        "endTime": "2022-03-02T14:00:00Z",
+        "entryTime": "2022-03-02T08:03:09Z",
+        "roadClosed": false,
+        "criticality": "minor",
+        "type": "construction",
+        "codes": [
+          815,
+          501
+        ],
+        "description": {
+          "value": "Bei Großer Grasbrook - Tagesbaustelle. Rechter Fahrstreifen gesperrt. Hamburg, Am Sandtorkai zwischen Mahatma-Gandhi-Brücke und Auf dem Sande Tagesbaustelle, rechter Fahrstreifen gesperrt, bis 02.03.2022 15:00 Uhr"
+        },
+        "summary": {
+          "value": "Bei Großer Grasbrook - Tagesbaustelle. Rechter Fahrstreifen gesperrt."
+        }
+      }
+    },
+    {
+      "location": {
+        "length": 200.0,
+        "olr": "CCkBEAAlJAcg/iYRqAAJBQQBA9YACgUEAYF4AP7yAJYACQUEAQNmADALJQ=="
+      },
+      "incidentDetails": {
+        "id": "33339975474495385",
+        "originalId": "33339975474495385",
+        "startTime": "2022-02-15T18:16:18Z",
+        "endTime": "2022-06-30T21:59:00Z",
+        "entryTime": "2022-02-15T18:16:18Z",
+        "roadClosed": false,
+        "criticality": "minor",
+        "type": "construction",
+        "codes": [
+          803,
+          500
+        ],
+        "description": {
+          "value": "Zwischen Billhorner Brückenstraße und Baakenwerder Straße - Bauarbeiten auf Abschnitt. Fahrstreifen gesperrt."
+        },
+        "summary": {
+          "value": "Zwischen Billhorner Brückenstraße und Baakenwerder Straße - Bauarbeiten auf Abschnitt. Fahrstreifen gesperrt."
+        }
+      }
+    },
+    {
+      "location": {
+        "length": 420.0,
+        "olr": "CCkBEAAlJAcl/yYWbAAJBQQCAqkACgUEAoMkAP3u/zEACQUEAgIpADAAAA=="
+      },
+      "incidentDetails": {
+        "id": "41106284944696612",
+        "originalId": "3732759511082595016",
+        "startTime": "2022-02-15T18:16:18Z",
+        "endTime": "2022-04-30T21:59:00Z",
+        "entryTime": "2022-03-02T10:51:12Z",
+        "roadClosed": true,
+        "criticality": "critical",
+        "type": "construction",
+        "codes": [
+          735
+        ],
+        "description": {
+          "value": "Geschlossen bei Hammer Landstraße - Wegen Baustelle gesperrt."
+        },
+        "summary": {
+          "value": "Geschlossen bei Hammer Landstraße - Wegen Baustelle gesperrt."
+        },
+        "junctionTraversability": "intermediateClosedEdgeOpen"
+      }
+    }
+  ]
+}

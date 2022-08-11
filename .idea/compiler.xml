@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="here2osm" />
         <module name="Here2OSM2" />
+        <module name="openlr" />
         <module name="Here2OSM" />
       </profile>
     </annotationProcessing>

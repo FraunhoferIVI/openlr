@@ -7,11 +7,11 @@ Examples are for Windows(x64).
 1. [IDE](#IDE)
 2. [QGIS](#QGIS)
 3. [PostgreSQL](#PostgreSQL)
-4. [Database client](#DB-client)
+4. [Database client](#DBclient)
 5. [HERE-Api-Key](#HERE-Api-Key)
 6. [osm2pgsql](#osm2pgsql)
-7. [OSM data](#<OSMdata>)
-8. [Database setup](#DB-setup)
+7. [OSM data](#OSMdata)
+8. [Database setup](#DBsetup)
 9. [Maven](#Maven)
 10. [Build](#Build)
 
@@ -30,7 +30,7 @@ This code works best with [IntelliJ](https://www.jetbrains.com/de-de/idea/downlo
   * Click the first Link in the Windows column
   * In the Application Stack Builder during installation of PostgreSQL, choose your PostgreSQL > install the latest PostGIS Bundle (under *Spatial Extensions*)
 
-### Database client
+### DBclient
 Download and install [DBeaver](https://dbeaver.io/download/)
 * Take the 64 bit installer under *Windows*
 
@@ -45,12 +45,13 @@ Download and install [DBeaver](https://dbeaver.io/download/)
     * type "View advanced system Settings" in the Start Menu and open it
     * click *Environment Variables* in the bottom right, than *Path* in the top  List and *Edit*
     * click *new* in the top right and paste the Path you copied earlier
+    * click *ok* on all opened Windows
 
-### [OSM data](https://download.geofabrik.de/)
+### [OSMdata](https://download.geofabrik.de/)
 * Download an osm *.pbf file of your choice
 * It is highly recommended to just get a city-file for beginners, e.g. [hamburg-latest](https://download.geofabrik.de/europe/germany/hamburg-latest.osm.pbf)
 
-### Database setup
+### DBsetup
 * Create the data base
     * Start DBeaver 
     * click *New Connection* (top left) and choose *PostgreSQL*, than *Next*
@@ -69,7 +70,9 @@ Download and install [DBeaver](https://dbeaver.io/download/)
     ```bash
     osm2pgsql -c -d postgres -U postgres -H localhost -W --hstore -S <Path to>\osm2pgsql-bin\default.style <Path to>\<filename>.osm.pbf
     ```
-Now your database should look like this:
+    * remember to use quotation marks around paths with Spaces.
+
+Now you should have these public tables:
 
 ![LoadedOSMData](src/main/resources/Screenshots/osm2pgsql.png)
 
@@ -77,7 +80,7 @@ Now your database should look like this:
     * If you want to use **all of the OSM** data use [This](src/main/resources/SQL/SQL_Script.sql)
     * If you want to **clip the data to an area** use [That](src/main/resources/SQL/SQL_Script.sql)
         * The clipping area has to be in YourDB\schemas\public\tables and named **bbox**.
-* **Before running** set the informations **map_name** and **map_owner** in the fourth last statement:
+    * **Before running** set the informations **map_name** and **map_owner** in the fourth last statement:
 ```sql
 INSERT INTO openlr.metadata(map_name, map_owner) VALUES
 ('Hamburg', 'OSM');
@@ -97,15 +100,14 @@ After running your database should look as follows:
 * Clone this project
     * Fork it **(optional)**
     * click *Code* (green button) and copy the HTTP-Adress
-    * In a Command Prompt cd to a location you want the project in and execute
+    * In a Command Prompt navigate to a location you want the project in and execute
     ```bash
     git clone <HTTP-Adress>
     ```
- * Set your **dbname**, **user** and **password** at src\main\java\DataBase\DatasourceConfig.java (line 23+2) and pom.xml (line 195+2)
- * Set your HERE Api key at src\main\java\HereApi\ApiRequest.java (line 37)
- * go back to the Command Prompt and execute
+* Set your **dbname**, **user** and **password** at src\main\java\DataBase\DatasourceConfig.java (line 23+2) and pom.xml (line 236+2)
+* go back to the Command Prompt and execute
 ```bash
-cd Here2OSM
+cd openlr
 ```
 ```bash
 mvn clean install
@@ -113,4 +115,5 @@ mvn clean install
 ```bash
 java -jar target\here2osm.jar
 ```
-* supply the bounding box of your map as WGS84 coordinates *([Northwest latitude],[Northwest longitude];[Southeast latitude],[Southeast longitude])* e.g.: 53.60,9.85;53.50,10.13 (hamburg)
+* supply the bounding box of your chosen region in the format: SW Long,SW Lat,NE Long,NE Lat (counterclockwise) hamburg for example has 9.850,53.500,10.130,53.600
+  
