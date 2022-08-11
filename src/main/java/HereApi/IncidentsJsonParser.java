@@ -122,11 +122,15 @@ public class IncidentsJsonParser {
                 location = decoderHere.decodeHere(olr);
                 Integer posOff = null;
                 Integer negOff = null;
-                if (location != null) {
+                if (location != null && location.isValid()) {
                     posOff = location.getPositiveOffset();
                     negOff = location.getNegativeOffset();
 
                     getAffectedLines(location, id, posOff, negOff);
+                }
+                else
+                {
+                    logger.warn("Could not decode olr code: {}", olr);
                 }
 
                 IncidentItemV7 item = new IncidentItemV7(id, originalId, olr, startTime, endTime, roadClosed,
