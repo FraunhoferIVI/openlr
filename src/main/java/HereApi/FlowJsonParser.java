@@ -4,6 +4,7 @@ import Decoder.HereDecoder;
 import com.google.gson.*;
 import openlr.location.Location;
 import openlr.map.Line;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,11 +18,17 @@ import java.util.List;
  */
 public class FlowJsonParser {
 
+    private final HereDecoder hereDecoder;
     private Timestamp updated;
     private List<FlowItemV7> flowItems = new ArrayList<>();
     private final List<AffectedLine> affectedLines = new ArrayList<>();
 
     private static final Logger logger = LoggerFactory.getLogger(FlowJsonParser.class);
+
+    public FlowJsonParser(@Nullable HereDecoder hereDecoder)
+    {
+        this.hereDecoder = hereDecoder;
+    }
 
     public Timestamp getUpdated() { return updated; }
 
@@ -75,9 +82,6 @@ public class FlowJsonParser {
         updated = Timestamp.valueOf(jsonObject.get("sourceUpdated").getAsString().substring(0, 19)
                 .replace('T', ' '));
 
-        // Initialize Decoder for HERE OpenLR Codes.
-        HereDecoder decoderHere = new HereDecoder();
-
         JsonArray results = jsonObject.get("results").getAsJsonArray();
         int resultCount = results.size();
 
@@ -121,7 +125,7 @@ public class FlowJsonParser {
             // Reads out TPEG-OLR Locations
             Location location = null;
             try {
-                location = decoderHere.decodeHere(olr);
+                location = hereDecoder.decodeHere(olr);
                 Integer posOff = null;
                 Integer negOff = null;
                 if (location != null && location.isValid()) {

@@ -47,10 +47,14 @@ public class RoutableOSMMapLoader implements MapLoader {
     private final List<LineImpl> allLinesList;
     private MapDatabaseImpl mdb;
     private final ArrayList<Double> boundingBoxInformation;
+    private final Point midPoint;
+    private final double distance;
 
-    public RoutableOSMMapLoader() throws SQLException {
+    public RoutableOSMMapLoader(Point midPoint, double distance) throws SQLException {
         con = DatasourceConfig.getConnection();
         ctx = DSL.using(con, SQLDialect.POSTGRES);
+        this.midPoint = midPoint;
+        this.distance = distance;
         allNodesList = getAllNodes();
         allLinesList = getAllLines();
         boundingBoxInformation = getBoundingBox();
