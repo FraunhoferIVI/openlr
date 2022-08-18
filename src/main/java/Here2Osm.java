@@ -20,8 +20,7 @@ public class Here2Osm {
         HereTrafficV7 request = new HereTrafficV7();
         request.insertBbox();
         // Use request.setBbox("<bbox>") instead to set the bounding box in Code.
-        request.update("incidents");
-        request.update("flow");
+        request.update();
 
         long end = System.currentTimeMillis();
         Time duration = new Time(end - start - 3_600_000);
