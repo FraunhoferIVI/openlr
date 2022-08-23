@@ -1,6 +1,7 @@
 package OpenLRImpl;
 
 import GeometryFunctions.*;
+import Loader.MapLoader;
 import Loader.RoutableOSMMapLoader;
 import openlr.map.Line;
 import openlr.map.MapDatabase;
@@ -26,11 +27,11 @@ import java.util.stream.Collectors;
 
 public class MapDatabaseImpl implements MapDatabase {
 
-    RoutableOSMMapLoader osmLoader;
+    private final MapLoader osmLoader;
 
     GeometryFactory geometryFactory = new GeometryFactory();
 
-    public MapDatabaseImpl(RoutableOSMMapLoader osmLoader) {
+    public MapDatabaseImpl(MapLoader osmLoader) {
         this.osmLoader = osmLoader;
         osmLoader.setMdb(this);
     }

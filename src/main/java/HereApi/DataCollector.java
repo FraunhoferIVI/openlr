@@ -57,9 +57,6 @@ public class DataCollector {
      */
     public void collectIncidentInformation(@NotNull List<TrafficItem> trafficItemList) throws Exception {
 
-        // Initialize Decoder for HERE OpenLR Codes.
-        HereDecoder decoderHere = new HereDecoder();
-
         for (TrafficItem trafficItemObject : trafficItemList) {
 
             String incidentId = trafficItemObject.getId();
@@ -77,11 +74,11 @@ public class DataCollector {
             boolean roadClosure = Boolean.parseBoolean(trafficItemObject.getClosure());
 
             // Reads out TPEG-OLR Locations
-            Location location = decoderHere.decodeHere(openLRCode);
+            // Location location = decoderHere.decodeHere(openLRCode);
 
             int posOff;
             int negOff;
-
+/*
             // If location is invalid positive and negative offsets get the value -100
             if (location == null) {
                 posOff = -100;
@@ -95,8 +92,10 @@ public class DataCollector {
                 getAffectedLines(location, incidentId, posOff, negOff);
             }
 
+ */
+
             // Create incident and add to list
-            incident2list(incidentId, type, status, start, end, criticality, openLRCode, shortDesc, longDesc, roadClosure, posOff, negOff);
+            // incident2list(incidentId, type, status, start, end, criticality, openLRCode, shortDesc, longDesc, roadClosure, posOff, negOff);
         }
         logger.info("Collected incident data.");
     }

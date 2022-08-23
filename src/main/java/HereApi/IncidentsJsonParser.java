@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import openlr.location.Location;
 import openlr.map.Line;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,11 +21,20 @@ import java.util.List;
  */
 public class IncidentsJsonParser {
 
+    private final HereDecoder hereDecoder;
     private Timestamp updated;
     private final List<IncidentItemV7> incidents = new ArrayList<>();
     private final List<AffectedLine> affectedLines = new ArrayList<>();
 
     private static final Logger logger = LoggerFactory.getLogger(IncidentsJsonParser.class);
+
+    /**
+     * @param hereDecoder The decoder for olr-code and stuff
+     */
+    public IncidentsJsonParser(@Nullable HereDecoder hereDecoder)
+    {
+        this.hereDecoder = hereDecoder;
+    }
 
     public Timestamp getUpdated() {
         return updated;
@@ -83,9 +93,6 @@ public class IncidentsJsonParser {
         updated = Timestamp.valueOf(jsonObject.get("sourceUpdated").getAsString().substring(0, 19)
                 .replace('T', ' '));
 
-        // Initialize Decoder for HERE OpenLR Codes.
-        HereDecoder decoderHere = new HereDecoder();
-
         JsonArray results = jsonObject.get("results").getAsJsonArray();
         int resultCount = results.size();
 
@@ -119,7 +126,7 @@ public class IncidentsJsonParser {
             // Reads out TPEG-OLR Locations
             Location location = null;
             try {
-                location = decoderHere.decodeHere(olr);
+                location = hereDecoder.decodeHere(olr);
                 Integer posOff = null;
                 Integer negOff = null;
                 if (location != null && location.isValid()) {

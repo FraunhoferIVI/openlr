@@ -1,6 +1,7 @@
 package HereApi;
 
 import DataBase.DatasourceConfig;
+import Decoder.HereDecoder;
 import Exceptions.InvalidBboxException;
 import Exceptions.InvalidWGS84CoordinateException;
 import com.here.account.auth.provider.FromDefaultHereCredentialsPropertiesFile;
@@ -9,8 +10,12 @@ import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 import org.jooq.sources.tables.*;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import Loader.RoutableOSMMapLoader;
 
 import java.io.*;
 import java.net.*;
@@ -33,7 +38,7 @@ public class HereTrafficV7
     // token needed for requesting the data
     private String token;
     // bounding box (divided in smaller pieces, if to big for a single request)
-    private List<String> boundingBoxes = new ArrayList<>();
+    private List<Double[]> boundingBoxes = new ArrayList<>();
     // flow data
     private Timestamp flowUpdated;
     private List<FlowItemV7> flowItems = new ArrayList<>();
@@ -133,15 +138,16 @@ public class HereTrafficV7
         double width = Math.abs(bbox[2] - bbox[0]);
         double height = Math.abs(bbox[3] - bbox[1]);
 
+        double halfHeight = height / 2;
+        double halfWidth = width / 2;
+        double leftLong = bbox[0];
+        double bottomLat = bbox[1];
+
         if ((width > size) || (height > size))
         {
             // set variables
-            double leftLong = bbox[0];
-            double bottomLat = bbox[1];
             double rightLong = bbox[2];
             double topLat = bbox[3];
-            double halfHeight = height / 2;
-            double halfWidth = width / 2;
 
             // calculate new, smaller Bounding Boxes
             double[] topLeft = {topLat, leftLong, (topLat - (halfHeight)), (leftLong + (halfWidth))};
@@ -156,15 +162,16 @@ public class HereTrafficV7
             quadTreeDissect(bottomRight, size);
         }
         else
-            {
-                // add to bbox-list (in the format required for the Api-request)
-                String box = String.format("%3.3f;%3.3f;%3.3f;%3.3f",
-                        bbox[0], bbox[1], bbox[2], bbox[3])
-                        .replace(',', '.')
-                        .replace(';', ',');
+        {
+            Double[] bbox_ = new Double[4];
+            bbox_[0] = bbox[0];
+            bbox_[1] = bbox[1];
+            bbox_[2] = bbox[2];
+            bbox_[3] = bbox[3];
 
-                boundingBoxes.add(box);
-            }
+            // create midPoint
+            boundingBoxes.add(bbox_);
+        }
     }
 
     /**
@@ -184,6 +191,7 @@ public class HereTrafficV7
 
         logger.info("token: " + token);
     }
+
 
     /**
      * Build the Api URL.
@@ -246,47 +254,71 @@ public class HereTrafficV7
     }
 
     /**
-     * Update either incident or flow information.
+     * Update both incident and flow information.
      *
-     * @param resource "incidents"/"flow"
      */
-    public void update(String resource)
+    public void update()
     {
         getToken();
-        String json = null;
+        String flowJson = null;
+        String incidentJson = null;
         // has to be done separately for each Bounding Box
-        for (String bbox : boundingBoxes)
+        for (int i = 0; i < boundingBoxes.size(); i++)
         {
+            // create bbox-String
+            Double[] bbox = boundingBoxes.get(i);
+            String box = String.format("%3.3f;%3.3f;%3.3f;%3.3f",
+                            bbox[0], bbox[1], bbox[2], bbox[3])
+                    .replace(',', '.')
+                    .replace(';', ',');
+
             try {
-                json = request(bbox, resource);
+                flowJson = request(box, "flow");
+                incidentJson = request(box, "incidents");
             } catch (IOException e) {
-                logger.error(e.getMessage());
+                logger.error("API request failed: {}",e.getMessage());
             }
 
-            if (resource.equals("flow")) {
-                FlowJsonParser parser = new FlowJsonParser();
+            // compute midPoint
+            double radius = (bbox[3] - bbox[1]) / 2;
+            double leftLong = bbox[0];
+            double bottomLat = bbox[1];
 
-                parser.parse(json);
-                // get update-time, flow info and affected lines
-                flowUpdated = parser.getUpdated();
-                flowItems.addAll(parser.getFlowItems());
-                flowAffectedLines.addAll(parser.getAffectedLines());
+            GeometryFactory factory = new GeometryFactory();
+            Point midPoint = factory.createPoint(new Coordinate(leftLong + radius, bottomLat + radius));
+            RoutableOSMMapLoader mapLoader = null;
 
-                // update Database Tables
-                updateFlowTables();
+            try {
+                // Initialize OSM Database Loader and close connection
+                mapLoader = new RoutableOSMMapLoader(midPoint, radius);
+                // mapLoader.close();
+            } catch (SQLException e) {
+                logger.error("Couldn't initialize MapLoader. Message: {}", e.getMessage());
+                System.exit(0);
             }
-            else if (resource.equals("incidents")) {
-                IncidentsJsonParser parser = new IncidentsJsonParser();
 
-                parser.parse(json);
-                // get update-time, incident info and affected lines
-                incidentsUpdated = parser.getUpdated();
-                incidentItems.addAll(parser.getIncidentItems());
-                incidentAffectedLines.addAll(parser.getAffectedLines());
+            // Initialize Decoder for HERE OpenLR Codes.
+            HereDecoder hereDecoder = new HereDecoder(mapLoader);
+            FlowJsonParser flowJsonParser = new FlowJsonParser(hereDecoder);
 
-                // update Database Tables
-                updateIncidentTables();
-            }
+            flowJsonParser.parse(flowJson);
+            // get update-time, flow info and affected lines
+            flowUpdated = flowJsonParser.getUpdated();
+            flowItems.addAll(flowJsonParser.getFlowItems());
+            flowAffectedLines.addAll(flowJsonParser.getAffectedLines());
+
+            // update Database Tables
+            updateFlowTables();
+            IncidentsJsonParser incidentsJsonParser = new IncidentsJsonParser(hereDecoder);
+
+            incidentsJsonParser.parse(incidentJson);
+            // get update-time, incident info and affected lines
+            incidentsUpdated = incidentsJsonParser.getUpdated();
+            incidentItems.addAll(incidentsJsonParser.getIncidentItems());
+            incidentAffectedLines.addAll(incidentsJsonParser.getAffectedLines());
+
+            // update Database Tables
+            updateIncidentTables();
         }
     }
 

@@ -5,6 +5,7 @@ import HereApi.ApiRequest;
 import HereDecoder.IntermediateReferencePoint;
 import HereDecoder.LinearLocationReference;
 import HereDecoder.OpenLocationReference;
+import Loader.MapLoader;
 import Loader.RoutableOSMMapLoader;
 import OpenLRImpl.MapDatabaseImpl;
 import openlr.LocationReferencePoint;
@@ -41,7 +42,17 @@ import java.util.List;
 
 public class HereDecoder {
 
-    private static final Logger logger = LoggerFactory.getLogger(ApiRequest.class);
+    private static final Logger logger = LoggerFactory.getLogger(HereDecoder.class);
+
+    private MapLoader mapLoader;
+
+    /**
+     * @param mapLoader Loader for all Nodes and Lines in a specified bounding box
+     */
+    public HereDecoder(RoutableOSMMapLoader mapLoader)
+    {
+        this.mapLoader = mapLoader;
+    }
 
     /**
      * Gets the OpenLR FOW Enum depending on the given FOW integer value
@@ -156,15 +167,8 @@ public class HereDecoder {
             return null;
         }
 
-        // Initialize OSM Database Loader and close connection
-        RoutableOSMMapLoader osmMapLoader = null;
-        try {
-            osmMapLoader = new RoutableOSMMapLoader();
-            osmMapLoader.close();
-        } catch (Exception e) { logger.error("Error while initializing map loader: {}", e.getMessage()); }
-
         // Initialize database
-        MapDatabase mapDatabase = new MapDatabaseImpl(osmMapLoader);
+        MapDatabase mapDatabase = new MapDatabaseImpl(mapLoader);
 
         // Decoder parameter, properties for writing on map database
         FileConfiguration decoderConfig = OpenLRPropertiesReader.loadPropertiesFromFile(new File(
