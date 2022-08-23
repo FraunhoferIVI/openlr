@@ -25,6 +25,9 @@ public class FlowJsonParser {
 
     private static final Logger logger = LoggerFactory.getLogger(FlowJsonParser.class);
 
+    /**
+     * @param hereDecoder The decoder for olr-code and stuff
+     */
     public FlowJsonParser(@Nullable HereDecoder hereDecoder)
     {
         this.hereDecoder = hereDecoder;

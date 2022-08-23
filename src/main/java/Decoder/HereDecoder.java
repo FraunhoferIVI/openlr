@@ -42,10 +42,13 @@ import java.util.List;
 
 public class HereDecoder {
 
-    private static final Logger logger = LoggerFactory.getLogger(ApiRequest.class);
+    private static final Logger logger = LoggerFactory.getLogger(HereDecoder.class);
 
     private MapLoader mapLoader;
 
+    /**
+     * @param mapLoader Loader for all Nodes and Lines in a specified bounding box
+     */
     public HereDecoder(RoutableOSMMapLoader mapLoader)
     {
         this.mapLoader = mapLoader;

@@ -28,6 +28,9 @@ public class IncidentsJsonParser {
 
     private static final Logger logger = LoggerFactory.getLogger(IncidentsJsonParser.class);
 
+    /**
+     * @param hereDecoder The decoder for olr-code and stuff
+     */
     public IncidentsJsonParser(@Nullable HereDecoder hereDecoder)
     {
         this.hereDecoder = hereDecoder;

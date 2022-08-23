@@ -50,6 +50,11 @@ public class RoutableOSMMapLoader implements MapLoader {
     private final Point midPoint;
     private final double distance;
 
+    /**
+     * @param midPoint mid-point of the loading-area
+     * @param distance distance from the mid-point to the edge of the bounding box
+     * @throws SQLException
+     */
     public RoutableOSMMapLoader(Point midPoint, double distance) throws SQLException {
         con = DatasourceConfig.getConnection();
         ctx = DSL.using(con, SQLDialect.POSTGRES);
