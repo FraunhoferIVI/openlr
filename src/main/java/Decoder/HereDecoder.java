@@ -42,7 +42,7 @@ import java.util.List;
 
 public class HereDecoder {
 
-    private static final Logger logger = LoggerFactory.getLogger(ApiRequest.class);
+    private static final Logger logger = LoggerFactory.getLogger(HereDecoder.class);
 
     private MapLoader mapLoader;
 
