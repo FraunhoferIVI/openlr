@@ -1,7 +1,6 @@
 package Decoder;
 
 import Exceptions.InvalidHereOLRException;
-import HereApi.ApiRequest;
 import HereDecoder.IntermediateReferencePoint;
 import HereDecoder.LinearLocationReference;
 import HereDecoder.OpenLocationReference;

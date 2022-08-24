@@ -1,12 +1,8 @@
-import Exceptions.InvalidBboxException;
-import Exceptions.InvalidWGS84CoordinateException;
-import HereApi.ApiRequest;
 import HereApi.HereTrafficV7;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Time;
-import java.sql.Timestamp;
 
 public class Here2Osm {
 

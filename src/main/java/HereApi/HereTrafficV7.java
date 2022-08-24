@@ -48,7 +48,7 @@ public class HereTrafficV7
     private List<IncidentItemV7> incidentItems = new ArrayList<>();
     private List<AffectedLine> incidentAffectedLines = new ArrayList<>();
 
-    private static final Logger logger = LoggerFactory.getLogger(ApiRequest.class);
+    private static final Logger logger = LoggerFactory.getLogger(HereTrafficV7.class);
 
     // needed for SQL queries
     static DSLContext ctx;
