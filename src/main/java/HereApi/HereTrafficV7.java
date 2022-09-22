@@ -181,7 +181,7 @@ public class HereTrafficV7
     {
         // get info for token request
         ClassLoader classLoader = getClass().getClassLoader();
-        String fileName = "hereCredentials_new.properties";
+        String fileName = "credentials.properties";
         URL url = classLoader.getResource(fileName);
         File credentialsFile = new File(url.getPath());
         FromDefaultHereCredentialsPropertiesFile fromDefaultHereCredentialsPropertiesFile = new FromDefaultHereCredentialsPropertiesFile(credentialsFile);

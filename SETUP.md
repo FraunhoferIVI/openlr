@@ -37,6 +37,7 @@ Download and install [DBeaver](https://dbeaver.io/download/)
 ### [HERE-Api-Key](https://developer.here.com/pricing)
 * Sign up for Freemium Plan
 * Create a REST API Key
+* Create a credentials.properties file as described in the section identity & access management (OAuth tokens)
 
 ### [osm2pgsql](https://osm2pgsql.org/doc/install.html#installing-on-windows)
 * Download the prebuild binaries (*osm2pgsql-latest-x64.zip*)
@@ -112,6 +113,7 @@ cd openlr
 ```bash
 mvn clean install
 ```
+Copy the already generated credentials.properties file to the folder target.
 ```bash
 java -jar target\here2osm.jar
 ```
