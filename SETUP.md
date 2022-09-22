@@ -113,7 +113,7 @@ cd openlr
 ```bash
 mvn clean install
 ```
-Copy the already generated credentials.properties file to the folder target.
+Copy the already generated `credentials.properties` file under the name `hereCredentials_new.properties` to the folder target.
 ```bash
 java -jar target\here2osm.jar
 ```
