@@ -227,3 +227,50 @@ UPDATE openlr.metadata set
     bbox_height = left_lon - right_lon,
     bbox_width = right_lat - left_lat;
 
+/* create table incidents_v7 */
+CREATE TABLE openlr.incidents_v7 (
+     incident_id varchar(64) PRIMARY KEY,
+     original_id varchar(64),
+     olr varchar(255),
+     start_time TIMESTAMP,
+     end_time TIMESTAMP,
+     road_closed BOOLEAN,
+     description TEXT,
+     summary TEXT,
+     junction_traversability varchar(32),
+     posoff int,
+     negoff int,
+     last_updated TIMESTAMP
+);
+
+/* create table kanten_incidents_v7 */
+CREATE TABLE openlr.kanten_incidents_v7 (
+    incident_id varchar(32) PRIMARY KEY,
+    line_id bigint NOT NULL,
+    posoff int,
+    negoff int
+);
+
+/* create table flow_v7 */
+CREATE TABLE openlr.flow_v7 (
+    name varchar(50),
+    olr varchar(50) PRIMARY KEY,
+    speed double precision NULL,
+    speed_uncapped double precision NULL,
+    free_flow_speed double precision NULL,
+    jam_factor double precision NULL,
+    confidence double precision NULL,
+    traversability varchar(50) NULL,
+    junction_traversability varchar(50) NULL,
+    posoff int,
+    negoff int,
+    last_updated TIMESTAMP
+);
+
+/* create table kanten_flow_v7 */
+CREATE TABLE openlr.kanten_flow_v7 (
+   olr varchar(64) NOT NULL,
+   line_id bigint NOT NULL,
+   posoff int,
+   negoff int
+);
