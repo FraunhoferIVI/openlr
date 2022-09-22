@@ -17,7 +17,7 @@ Examples are for Windows(x64).
 
 
 ### IDE
-This code works best with [IntelliJ](https://www.jetbrains.com/de-de/idea/download/#section=windows), but feel free to use your favourite IDE
+This code works best with [IntelliJ](https://www.jetbrains.com/de-de/idea/download/#section=windows), but feel free to use your favourite IDE. You should use a JDK >= 11.
 
 ### QGIS
 * QGIS is free and open source geographic information system, which is used to visualise test data
