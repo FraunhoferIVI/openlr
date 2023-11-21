@@ -37,7 +37,7 @@ Download and install [DBeaver](https://dbeaver.io/download/)
 ### [HERE-Api-Key](https://developer.here.com/pricing)
 * Sign up for Freemium Plan
 * Create a REST API Key
-* Create a credentials.properties file as described in the section identity & access management (OAuth tokens)
+* Create a `credentials.properties` file as described in the section identity & access management (OAuth tokens)
 
 ### [osm2pgsql](https://osm2pgsql.org/doc/install.html#installing-on-windows)
 * Download the prebuild binaries (*osm2pgsql-latest-x64.zip*)
@@ -113,9 +113,11 @@ cd openlr
 ```bash
 mvn clean install
 ```
-Copy the already generated credentials.properties file to the folder target.
+Copy the already generated `credentials.properties` file to the subfolder `target` of the project.
+
+Move to the subfolder `target` and run from there:
 ```bash
-java -jar target\here2osm.jar
+java -jar here2osm.jar
 ```
 * supply the bounding box of your chosen region in the format: SW Long,SW Lat,NE Long,NE Lat (counterclockwise) hamburg for example has 9.850,53.500,10.130,53.600
   
