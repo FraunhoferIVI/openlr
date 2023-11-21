@@ -179,11 +179,15 @@ public class HereTrafficV7
      */
     public void getToken()
     {
-        // get info for token request
-        ClassLoader classLoader = getClass().getClassLoader();
+        // Get the current working directory
+        String currentDirectory = System.getProperty("user.dir");
+
+        // Specify the file name (adjust the file name as needed)
         String fileName = "credentials.properties";
-        URL url = classLoader.getResource(fileName);
-        File credentialsFile = new File(url.getPath());
+
+        // Create the file path using the current directory and file name
+        Path filePath = Paths.get(currentDirectory, fileName);
+        File credentialsFile = filePath.toFile();
         FromDefaultHereCredentialsPropertiesFile fromDefaultHereCredentialsPropertiesFile = new FromDefaultHereCredentialsPropertiesFile(credentialsFile);
 
         // token request
