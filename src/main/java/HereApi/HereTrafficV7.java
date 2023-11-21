@@ -30,6 +30,9 @@ import java.util.Locale;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import static org.jooq.impl.DSL.*;
 import static org.jooq.sources.tables.Kanten.KANTEN;
 
