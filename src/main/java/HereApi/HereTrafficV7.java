@@ -253,7 +253,19 @@ public class HereTrafficV7
                 while ((line = reader.readLine()) != null) { response.append(line); }
                 return response.toString();
 
-            } else { logger.error("GET Request failed"); }
+            } 
+            else
+            { 
+                logger.error("GET Request failed. Status code: {}", httpResponse.statusCode());
+                
+                // cast response to String
+                BufferedReader reader = new BufferedReader(new InputStreamReader(httpResponse.body()));
+                StringBuilder response = new StringBuilder();
+                String line;
+
+                while ((line = reader.readLine()) != null) { response.append(line); }
+                logger.error("Response from server: {}", response);
+            }
         }
         catch (InterruptedException e) { logger.error(e.getMessage()); }
 
