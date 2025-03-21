@@ -106,7 +106,7 @@ public class FlowItemV7 {
 
     public boolean isInvalid() {
         return speed == null || speedUncapped == null || freeFlow == null ||
-               jamFactor == null || confidence == null || posOff == null || negOff == null;
+               jamFactor == null || confidence == null || posoff == null || negoff == null;
     }
 
     @Override
