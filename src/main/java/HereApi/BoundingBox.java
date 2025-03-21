@@ -1,7 +1,7 @@
 package HereApi;
 
 import openlr.map.GeoCoordinates;
-
+import lombok.Getter;
 /**
  *
  * This class describes the bounding box.
@@ -9,7 +9,7 @@ import openlr.map.GeoCoordinates;
  * @author  Emily Kast
  *
  */
-
+@Getter
 public class BoundingBox extends TrafficItem {
 
     double height;
@@ -36,32 +36,6 @@ public class BoundingBox extends TrafficItem {
         this.bottomRightLon = bottomRightLon;
         this.height = upperLeftLat - bottomRightLat;
         this.width = bottomRightLon - upperLeftLon;
-    }
-
-    public double getUpperLeftLat() {
-        return upperLeftLat;
-    }
-
-    public double getUpperLeftLon() {
-        return upperLeftLon;
-    }
-
-    public double getBottomRightLat() {
-        return bottomRightLat;
-    }
-
-    public double getBottomRightLon() {
-        return bottomRightLon;
-    }
-
-    public double getWidth() {
-
-        return width;
-    }
-
-    public double getHeight() {
-
-        return height;
     }
 
     /**

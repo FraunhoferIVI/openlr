@@ -8,6 +8,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Implementation of the TomTom OpenLR Node interface.
@@ -18,10 +20,15 @@ import java.util.stream.Collectors;
 public class NodeImpl implements Node {
 
     long node_id;
+    @Getter
     double lat;
+    @Getter
     double lon;
+    @Setter @Getter
     Point pointGeometry;
+    @Setter 
     List<Long> connectedLinesIDs;
+    @Setter
     MapDatabaseImpl mdb;
 
     List<Line> connectedLines;
@@ -32,34 +39,7 @@ public class NodeImpl implements Node {
         this.lon = lon;
 
     }
-
-    public void setPointGeometry(Point pointGeometry) {
-        this.pointGeometry = pointGeometry;
-    }
-
-    public void setConnectedLinesIDs(List<Long> connectedLinesIDs) {
-        this.connectedLinesIDs = connectedLinesIDs;
-    }
-
-    public void setMdb(MapDatabaseImpl mdb) {
-        this.mdb = mdb;
-    }
-
-    public double getLat() {
-
-        return lat;
-    }
-
-    public double getLon() {
-
-        return lon;
-    }
-
-    public Point getPointGeometry() {
-
-        return pointGeometry;
-    }
-
+    
     @Override
     public double getLatitudeDeg() {
 
