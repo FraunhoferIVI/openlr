@@ -25,8 +25,13 @@ public class FlowJsonParser {
 
     private static final Logger logger = LoggerFactory.getLogger(FlowJsonParser.class);
 
+    public FlowJsonParser()
+    {
+        this(null);
+    }
+
     /**
-     * @param hereDecoder The decoder for olr-code and stuff
+     * @param hereDecoder The decoder to use for decoding olr codes to locations. If null, no decoding is done. FlowItems will have no location offsets in this case.
      */
     public FlowJsonParser(@Nullable HereDecoder hereDecoder)
     {
@@ -128,7 +133,8 @@ public class FlowJsonParser {
             // Reads out TPEG-OLR Locations
             Location location = null;
             try {
-                location = hereDecoder.decodeHere(olr);
+                if (hereDecoder != null)
+                    location = hereDecoder.decodeHere(olr);
                 Integer posOff = null;
                 Integer negOff = null;
                 if (location != null && location.isValid()) {
