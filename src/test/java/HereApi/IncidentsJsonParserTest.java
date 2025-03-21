@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -35,8 +36,12 @@ public class IncidentsJsonParserTest {
         assertEquals("3712282026996998623", incidentItem.getId());
         assertEquals("4454517718886483395", incidentItem.getOriginalId());
         assertEquals("CCgBEAAkIwcPAyYUTAAJBQQEAzUACgQDBFcAAH4AFgAJBQQEA7UAMAAA", incidentItem.getOlr());
-        assertEquals(LocalDateTime.parse("2022-02-15T18:16:18"), incidentItem.getStartTime());
-        assertEquals(LocalDateTime.parse("2022-03-03T06:16:18"), incidentItem.getEndTime());
+        LocalDateTime expectedStartTime = LocalDateTime.parse("2022-02-15T18:16:18");
+        Timestamp actualStartTime = incidentItem.getStartTime();
+        assertEquals(expectedStartTime.getNano(), actualStartTime.getNanos());
+        LocalDateTime expectedEndTime = LocalDateTime.parse("2022-03-03T06:16:18");
+        Timestamp actualEndTime = incidentItem.getEndTime();
+        assertEquals(expectedEndTime.getNano(), actualEndTime.getNanos());
         assertEquals(true, incidentItem.isRoadClosed());
         assertEquals("Geschlossen zwischen Boninstraße und Rothestraße - Gesperrt.", incidentItem.getDescription());
         assertEquals("Geschlossen zwischen Boninstraße und Rothestraße - Gesperrt.", incidentItem.getSummary());
