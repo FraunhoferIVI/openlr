@@ -105,7 +105,7 @@ After running your database should look as follows:
     ```bash
     git clone <HTTP-Adress>
     ```
-* Set your **dbname**, **user** and **password** at src\main\java\DataBase\DatasourceConfig.java (line 23+2) and pom.xml (line 236+2)
+* Set your **dbname**, **user** and **password** at **src\main\java\DataBase\DatasourceConfig.java** (line 23+2) and **pom.xml** (line 236+2)
 * go back to the Command Prompt and execute
 ```bash
 cd openlr
