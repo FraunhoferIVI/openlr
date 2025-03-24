@@ -1,5 +1,6 @@
 package HereApi;
-
+import lombok.Getter;
+import lombok.Setter;
 /**
  * Contains information needed to describe the line affected by an traffic incident.
  * Information needed are the lineId of the affected line, the incidentId of the traffic
@@ -7,14 +8,16 @@ package HereApi;
  *
  * @author Emily Kast
  */
-
+@Getter
 public class AffectedLine {
 
     private long lineId;
     private String incidentId;
     // positive offset
+    @Setter
     private int posOff;
     // negative offset
+    @Setter
     private int negOff;
 
     /**
@@ -26,28 +29,5 @@ public class AffectedLine {
         this.lineId = lineId;
         this.incidentId = incidentId;
     }
-
-    public long getLineId() {
-        return lineId;
-    }
-
-    public String getIncidentId() {
-        return incidentId;
-    }
-
-    public int getPosOff() {
-        return posOff;
-    }
-
-    public void setPosOff(int posOff) {
-        this.posOff = posOff;
-    }
-
-    public int getNegOff() {
-        return negOff;
-    }
-
-    public void setNegOff(int negOff) {
-        this.negOff = negOff;
-    }
+    
 }

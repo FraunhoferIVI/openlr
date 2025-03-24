@@ -11,6 +11,8 @@ import org.locationtech.jts.operation.distance.DistanceOp;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.util.*;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Implementation of the TomTom OpenLR Line interface.
@@ -21,7 +23,9 @@ import java.util.*;
 public class LineImpl implements Line {
 
     long line_id;
+    @Setter @Getter
     long startNode_id;
+     @Setter @Getter
     long endNode_id;
     Node startNode;
     Node endNode;
@@ -32,7 +36,9 @@ public class LineImpl implements Line {
     int length_meter;
     String name;
     boolean isReversed;
+    @Setter @Getter
     LineString lineGeometry;
+    @Setter
     MapDatabaseImpl mdb;
 
     GeometryFactory geometryFactory = new GeometryFactory();
@@ -48,27 +54,7 @@ public class LineImpl implements Line {
         this.isReversed = isReversed;
     }
 
-    public void setStartNode(Node startNode) {
-        this.startNode = startNode;
-    }
-
-    public void setEndNode(Node endNode) {
-        this.endNode = endNode;
-    }
-
-    public void setLineGeometry(LineString lineGeometry) {
-        this.lineGeometry = lineGeometry;
-    }
-
-    public void setMdb(MapDatabaseImpl mdb) {
-        this.mdb = mdb; }
-
-    public long getStartNodeID() { return startNode_id; }
-
-    public long getEndNodeID() { return endNode_id; }
-
-    public LineString getLineGeometry() { return lineGeometry; }
-
+  
     public boolean isReversed() { return isReversed; }
 
     @Override
