@@ -1,44 +1,24 @@
 package HereDecoder;
 
 import java.util.Arrays;
-
+import lombok.Getter;
+import lombok.Setter;
 /**
  * HERE implementation of the TPEG-OLR standard (ISO/TS 21219-22)
  * Original C# program translated to Java.
  */
 
 public class BaseLocationReference {
-    public boolean isValid;
+    @Getter @Setter
+    public boolean valid;
+    @Getter @Setter
     public double offset;
+    @Getter @Setter
     public Geoposition origin;
     public OpenLocationReference.OLRType type;
 
     public void baseLocationReference() {
 
-    }
-
-    public boolean isValid() {
-        return isValid;
-    }
-
-    public void setValid(boolean valid) {
-        isValid = valid;
-    }
-
-    public double getOffset() {
-        return offset;
-    }
-
-    public void setOffset(double offset) {
-        this.offset = offset;
-    }
-
-    public Geoposition getOrigin() {
-        return origin;
-    }
-
-    public void setOrigin(Geoposition origin) {
-        this.origin = origin;
     }
 
     public OpenLocationReference.OLRType getType() {
