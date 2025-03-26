@@ -60,7 +60,10 @@ public class HereDecoder {
      * @param fow integer value Form Of Way given in the HERE Location
      * @return OpenLR FOW value
      */
-    private FormOfWay getFOWEnumOpenLR(int fow) {
+     private FormOfWay getFOWEnumOpenLR(int fow) {
+        if (fow < 0 || fow >= FormOfWay.values().length) {
+            throw new IllegalArgumentException("Invalid FormOfWay index: " + fow);
+        }
         return FormOfWay.values()[fow];
     }
 
@@ -71,6 +74,9 @@ public class HereDecoder {
      * @return OpenLR FRC value
      */
     private FunctionalRoadClass getFRCEnumOpenLR(int frc) {
+        if (frc < 0 || frc >= FunctionalRoadClass.values().length) {
+            throw new IllegalArgumentException("Invalid FunctionalRoadClass index: " + frc);
+        }
         return FunctionalRoadClass.values()[frc];
     }
 
