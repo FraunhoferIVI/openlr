@@ -7,52 +7,24 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
+import lombok.Getter;
+import lombok.Setter;
 /**
  * HERE implementation of the TPEG-OLR standard (ISO/TS 21219-22)
  * Original C# program translated to Java.
  */
 
 public class FirstReferencePoint {
-
+    @Getter @Setter
     public Geoposition coordinate;
+    @Getter @Setter
     public LineProperties lineProperties;
+    @Getter @Setter
     public PathProperties pathProperties;
+    @Getter @Setter
     public boolean isValid;
     private int lat;
     private int lon;
-
-    public Geoposition getCoordinate() {
-        return coordinate;
-    }
-
-    public void setCoordinate(Geoposition coordinate) {
-        this.coordinate = coordinate;
-    }
-
-    public LineProperties getLineProperties() {
-        return lineProperties;
-    }
-
-    public void setLineProperties(LineProperties lineProperties) {
-        this.lineProperties = lineProperties;
-    }
-
-    public PathProperties getPathProperties() {
-        return pathProperties;
-    }
-
-    public void setPathProperties(PathProperties pathProperties) {
-        this.pathProperties = pathProperties;
-    }
-
-    public boolean isValid() {
-        return isValid;
-    }
-
-    public void setValid(boolean valid) {
-        isValid = valid;
-    }
 
     public int decode(int[] buff) {
         final int sizeOfAbsVal = 3;
