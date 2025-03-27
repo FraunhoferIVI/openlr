@@ -5,7 +5,8 @@ package HereDecoder;
  * HERE implementation of the TPEG-OLR standard (ISO/TS 21219-22)
  * Original C# program translated to Java.
  */
-
+import lombok.Getter;
+import lombok.Setter;
 public class FixedBitArray {
 
     public static final int max_size = 5;
@@ -13,6 +14,7 @@ public class FixedBitArray {
     public final int maxBitsAvailable = max_size * 7;
     public int value;
     public int size;
+    @Getter @Setter
     public boolean isValid;
     private int lon;
     private int lat;
@@ -21,13 +23,6 @@ public class FixedBitArray {
         size = 1;
     }
 
-    public boolean isValid() {
-        return isValid;
-    }
-
-    public void setValid(boolean valid) {
-        isValid = valid;
-    }
 
     public boolean isBitSet(int indexFromLeftMostBit) {
         int totalSizeOfBitArray = (max_size * 7) - 1;
