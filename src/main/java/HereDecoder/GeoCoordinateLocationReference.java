@@ -1,7 +1,8 @@
 package HereDecoder;
 
 import java.util.Arrays;
-
+import lombok.Getter;
+import lombok.Setter;
 /**
  * HERE implementation of the TPEG-OLR standard (ISO/TS 21219-22)
  * Original C# program translated to Java.
@@ -10,6 +11,7 @@ import java.util.Arrays;
 public class GeoCoordinateLocationReference extends BaseLocationReference {
 
     // Required
+    @Getter @Setter
     public Geoposition coordinate;
     public OpenLocationReference.OLRType type;
 
@@ -47,13 +49,6 @@ public class GeoCoordinateLocationReference extends BaseLocationReference {
         return absoluteVal;
     }
 
-    public Geoposition getCoordinate() {
-        return coordinate;
-    }
-
-    public void setCoordinate(Geoposition coordinate) {
-        this.coordinate = coordinate;
-    }
 
     public OpenLocationReference.OLRType getType() {
         return OpenLocationReference.OLRType.GeoCoordinate;
