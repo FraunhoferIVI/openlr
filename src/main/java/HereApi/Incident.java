@@ -5,6 +5,8 @@ import HereApi.TrafficItem;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 /**
  * This class describes the incident object.
@@ -12,7 +14,8 @@ import java.util.List;
  * @author Emily Kast
  *
  */
-
+@Getter
+@AllArgsConstructor
 public class Incident {
 
     private String incidentId;
