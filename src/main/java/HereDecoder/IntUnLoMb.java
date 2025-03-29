@@ -1,5 +1,6 @@
 package HereDecoder;
-
+import lombok.Getter;
+import lombok.Setter;
 /**
  * HERE implementation of the TPEG-OLR standard (ISO/TS 21219-22)
  * Original C# program translated to Java.
@@ -10,9 +11,12 @@ public class IntUnLoMb {
     public static int max_size = 5;
     public static int min_size = 1;
 
-    public int size;
-    public int value;
-    public boolean isValid;
+    @Getter @Setter
+    private int size;
+    @Getter @Setter
+    private int value;
+    @Getter @Setter
+    private boolean isValid;
 
     public static byte[] encode(int value) {
         int size;
@@ -39,30 +43,6 @@ public class IntUnLoMb {
         buf[size - 1] &= 0x7f; //Set the continue bit on the last byte to 0
         return buf;
 
-    }
-
-    public int getSize() {
-        return size;
-    }
-
-    public void setSize(int size) {
-        this.size = size;
-    }
-
-    public int getValue() {
-        return value;
-    }
-
-    public void setValue(int value) {
-        this.value = value;
-    }
-
-    public boolean isValid() {
-        return isValid;
-    }
-
-    public void setValid(boolean valid) {
-        isValid = valid;
     }
 
     public int decode(int[] byteBuffer) {

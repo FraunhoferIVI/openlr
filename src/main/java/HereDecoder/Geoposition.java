@@ -1,10 +1,11 @@
 package HereDecoder;
-
+import lombok.Getter;
+import lombok.Setter;
 /**
  * HERE implementation of the TPEG-OLR standard (ISO/TS 21219-22)
  * Original C# program translated to Java.
  */
-
+@Getter @Setter
 public class Geoposition {
     public static final int scale_factor = 10000000; // scale factor for converting to integers.
 
@@ -28,22 +29,6 @@ public class Geoposition {
 
     private static double fromInt(int value) {
         return ((double) value) / scale_factor;
-    }
-
-    public double getLatitude() {
-        return fromInt(latitude);
-    }
-
-    public void setLatitude(double latitude) {
-        this.latitude = toInt(latitude);
-    }
-
-    public double getLongitude() {
-        return fromInt(longitude);
-    }
-
-    public void setLongitude(double longitude) {
-        this.longitude = toInt(longitude);
     }
 
     @Override

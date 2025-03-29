@@ -2,63 +2,27 @@ package HereDecoder;
 
 import java.io.ByteArrayInputStream;
 import java.util.Arrays;
-
+import lombok.Getter;
+import lombok.Setter;
 /**
  * HERE implementation of the TPEG-OLR standard (ISO/TS 21219-22)
  * Original C# program translated to Java.
  */
-
+@Getter 
 public class ComponentHeader {
-
+    @Setter
     private int gcId;
+    @Setter
     private int lengthCompCH;
+    @Setter
     private int lengthAttrCH;
+    @Setter
     private boolean isValid;
     private int totalLength;
     private int bytesToRead;
 
     public static byte[] encode(int gcId, int lengthCompValue, int lengthAttrValue) {
         return new byte[]{(byte) gcId, (byte) lengthCompValue, (byte) lengthAttrValue};
-    }
-
-    public int getBytesToRead() {
-        return bytesToRead;
-    }
-
-    public int getTotalLength() {
-        return totalLength;
-    }
-
-    public boolean getIsValid() {
-        return isValid;
-    }
-
-    public void setValid(boolean valid) {
-        isValid = valid;
-    }
-
-    public int getLengthAttrCH() {
-        return lengthAttrCH;
-    }
-
-    public void setLengthAttrCH(int lengthAttrCH) {
-        this.lengthAttrCH = lengthAttrCH;
-    }
-
-    public int getLengthCompCH() {
-        return lengthCompCH;
-    }
-
-    public void setLengthCompCH(int lengthCompCH) {
-        this.lengthCompCH = lengthCompCH;
-    }
-
-    public int getGcId() {
-        return gcId;
-    }
-
-    public void setGcId(int gcId) {
-        this.gcId = gcId;
     }
 
     public int decode(int[] bytes) {
@@ -89,6 +53,5 @@ public class ComponentHeader {
 
         return totalBytesRead;
     }
-
 
 }
