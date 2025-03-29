@@ -10,7 +10,7 @@ import lombok.Getter;
  * container for information of a single Item from HERE's traffic incident API version 7
  */
 @Getter
-@AllArgsConstructor;
+@AllArgsConstructor
 public class IncidentItemV7 {
 
    
