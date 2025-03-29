@@ -10,7 +10,7 @@ import lombok.Setter;
 
 public class BaseLocationReference {
     @Getter @Setter
-    public boolean valid;
+    public boolean isValid;
     @Getter @Setter
     public double offset;
     @Getter @Setter
